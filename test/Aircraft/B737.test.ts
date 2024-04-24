@@ -1,7 +1,7 @@
-import { loadFixture } from '@nomicfoundation/hardhat-network-helpers'
-import { expect } from 'chai'
-import { ethers } from 'hardhat'
-import { BigNumber } from 'ethers'
+import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
+import { expect } from "chai";
+import { ethers } from "hardhat";
+import { BigNumber } from "ethers";
 import {
   deployAircraftNFT,
   deployAirlineCoin,
@@ -11,78 +11,109 @@ import {
   mintAircraft,
   mintLicense,
   setClaimConditionsAircraft,
-  setClaimConditionsLicense
-} from '../../utils'
+  setClaimConditionsLicense,
+} from "../../utils";
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { parseUnits } from "ethers/lib/utils";
+import { AirlineCoin } from "../../typechain-types";
 
-describe('Aircraft Boeing 737', async function () {
+describe("Aircraft Boeing 737", async function () {
   async function deployContracts() {
-    const [owner, otherAccount, thirdAccount] = await ethers.getSigners()
-    const airlineCoin = await deployAirlineCoin(owner.address)
-    const license = await deployLicenseNFT(owner.address)
-    const aircraft = await deployAircraftNFT(owner, license.address)
+    const [owner, otherAccount, thirdAccount] = await ethers.getSigners();
+    const airlineCoin = await deployAirlineCoin(owner.address);
+    const license = await deployLicenseNFT(owner.address);
+    const aircraft = await deployAircraftNFT(owner, license.address);
 
-    return { license, aircraft, airlineCoin, owner, otherAccount, thirdAccount }
+    return {
+      license,
+      aircraft,
+      airlineCoin,
+      owner,
+      otherAccount,
+      thirdAccount,
+    };
   }
 
-  it('Should set the right owner', async function () {
-    const [owner] = await ethers.getSigners()
-    const { aircraft } = await loadFixture(deployContracts)
+  async function setBalances(
+    airlineCoin: AirlineCoin,
+    from: SignerWithAddress,
+    to: string,
+    amount: string,
+  ) {
+    await airlineCoin.connect(from).approve(to, parseUnits(amount, "ether"));
+    await airlineCoin.connect(from).transfer(to, parseUnits(amount, "ether"));
+  }
 
-    expect(await aircraft.owner()).to.equal(owner.address)
-  })
+  it("Should set the right owner", async function () {
+    const [owner] = await ethers.getSigners();
+    const { aircraft } = await loadFixture(deployContracts);
 
-  it('Should set new claim conditions', async () => {
-    const { aircraft, airlineCoin, owner } = await loadFixture(deployContracts)
+    expect(await aircraft.owner()).to.equal(owner.address);
+  });
 
-    await lazyMintAircraft('3', 2, owner, aircraft)
-    await setClaimConditionsAircraft(aircraft, 2, airlineCoin)
+  it("Should set new claim conditions", async () => {
+    const { aircraft, airlineCoin, owner } = await loadFixture(deployContracts);
 
-    const cc = await aircraft.claimCondition(2)
+    await lazyMintAircraft("3", 2, owner, aircraft);
+    await setClaimConditionsAircraft(aircraft, 2, airlineCoin);
 
-    expect(cc.maxClaimableSupply).to.be.equal(BigNumber.from('100'))
-  })
+    const cc = await aircraft.claimCondition(2);
 
-  it('Should reject if no license 2 owner', async function () {
-    const { aircraft, owner, otherAccount, airlineCoin } = await loadFixture(deployContracts)
-    const beforeBalance = await aircraft.balanceOf(otherAccount.address, 2)
-    expect(beforeBalance).to.equal(0)
+    expect(cc.maxClaimableSupply).to.be.equal(BigNumber.from("100"));
+  });
 
-    await lazyMintAircraft('3', 2, owner, aircraft)
-    await setClaimConditionsAircraft(aircraft, 2, airlineCoin)
+  it("Should reject if no license 2 owner", async function () {
+    const { aircraft, owner, otherAccount, airlineCoin } =
+      await loadFixture(deployContracts);
+    const beforeBalance = await aircraft.balanceOf(otherAccount.address, 2);
+    expect(beforeBalance).to.equal(0);
+
+    await lazyMintAircraft("3", 2, owner, aircraft);
+    await setClaimConditionsAircraft(aircraft, 2, airlineCoin);
     try {
-      await mintAircraft(aircraft, otherAccount, 2, airlineCoin)
-      expect(true).to.equal(false)
+      await mintAircraft(aircraft, otherAccount, 2, airlineCoin);
+      expect(true).to.equal(false);
     } catch (error) {
-      const afterBalance = await aircraft.balanceOf(otherAccount.address, 2)
-      expect(afterBalance).to.equal(0)
+      const afterBalance = await aircraft.balanceOf(otherAccount.address, 2);
+      expect(afterBalance).to.equal(0);
     }
-  })
+  });
 
-  it('Should be able to claim if has license 2', async function () {
-    const { license, aircraft, owner, otherAccount, airlineCoin } = await loadFixture(deployContracts)
-    const beforeBalance = await aircraft.balanceOf(otherAccount.address, 2)
-    expect(beforeBalance).to.equal(0)
+  it("Should be able to claim if has license 2", async function () {
+    const { license, aircraft, owner, otherAccount, airlineCoin } =
+      await loadFixture(deployContracts);
+    await setBalances(airlineCoin, owner, otherAccount.address, "110");
+    await airlineCoin
+      .connect(otherAccount)
+      .approve(license.address, parseUnits("60", "ether"));
+    await airlineCoin
+      .connect(otherAccount)
+      .approve(aircraft.address, parseUnits("50", "ether"));
 
-    await lazyMintLicense('3', 0, owner, license)
-    await setClaimConditionsLicense(license, 0, airlineCoin)
-    await mintLicense(license, otherAccount, 0, airlineCoin, 0)
-    await lazyMintLicense('3', 1, owner, license)
-    await setClaimConditionsLicense(license, 1, airlineCoin)
-    await mintLicense(license, otherAccount, 1, airlineCoin, 0)
-    await lazyMintLicense('3', 2, owner, license)
-    await setClaimConditionsLicense(license, 2, airlineCoin)
-    await mintLicense(license, otherAccount, 2, airlineCoin, 1)
+    const beforeBalance = await aircraft.balanceOf(otherAccount.address, 2);
+    expect(beforeBalance).to.equal(0);
 
-    expect(await license.balanceOf(otherAccount.address, 0)).to.equal(1)
-    expect(await license.balanceOf(otherAccount.address, 1)).to.equal(1)
-    expect(await license.balanceOf(otherAccount.address, 2)).to.equal(1)
-    expect(await aircraft.balanceOf(otherAccount.address, 2)).to.equal(0)
+    await lazyMintLicense("3", 0, owner, license);
 
-    await lazyMintAircraft('3', 2, owner, aircraft)
-    await setClaimConditionsAircraft(aircraft, 2, airlineCoin)
-    await mintAircraft(aircraft, otherAccount, 2, airlineCoin)
+    await setClaimConditionsLicense(license, 0, airlineCoin);
+    await setClaimConditionsLicense(license, 1, airlineCoin);
+    await setClaimConditionsLicense(license, 2, airlineCoin);
 
-    const afterBalance = await aircraft.balanceOf(otherAccount.address, 2)
-    expect(afterBalance).to.equal(1)
-  })
-})
+    await mintLicense(license, otherAccount, 0, airlineCoin, 0);
+    await mintLicense(license, otherAccount, 1, airlineCoin, 0);
+    await mintLicense(license, otherAccount, 2, airlineCoin, 1);
+
+    expect(await license.balanceOf(otherAccount.address, 0)).to.equal(1);
+    expect(await license.balanceOf(otherAccount.address, 1)).to.equal(1);
+    expect(await license.balanceOf(otherAccount.address, 2)).to.equal(1);
+    expect(await aircraft.balanceOf(otherAccount.address, 2)).to.equal(0);
+
+    await lazyMintAircraft("3", 2, owner, aircraft);
+    await setClaimConditionsAircraft(aircraft, 2, airlineCoin);
+    await mintAircraft(aircraft, otherAccount, 2, airlineCoin);
+
+    const afterBalance = await aircraft.balanceOf(otherAccount.address, 2);
+    expect(afterBalance).to.equal(1);
+    expect(await airlineCoin.balanceOf(otherAccount.address)).to.equal(0);
+  });
+});

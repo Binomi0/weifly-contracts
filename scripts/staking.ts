@@ -32,6 +32,7 @@ const deployStaking = async (
     nativeTokenWrapper.address,
   );
   await stakingAirline.deployed();
+  console.log("Staking Deployed:", stakingAirline.address);
 
   console.log("----- OWNER DEPOSIT REWARDS -----");
   console.log("Balance before:", await airLineReward.balanceOf(owner.address));

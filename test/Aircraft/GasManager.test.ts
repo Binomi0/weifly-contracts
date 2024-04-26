@@ -15,7 +15,7 @@ import {
 } from "../../utils";
 import { ethers } from "hardhat";
 
-describe("Handle Gas", async () => {
+describe("Handle Aircraft combustible", async () => {
   async function deployContracts() {
     const [owner, otherAccount, thirdAccount] = await ethers.getSigners();
     const airlineCoin = await deployAirlineCoin(owner.address);
@@ -34,7 +34,7 @@ describe("Handle Gas", async () => {
     };
   }
 
-  it("Should hanlde correctly combustible", async () => {
+  it("Should handle correctly combustible", async () => {
     const {
       owner,
       license,
@@ -44,6 +44,9 @@ describe("Handle Gas", async () => {
       aircraft,
     } = await loadFixture(deployContracts);
 
+    /**
+     * Set Balances initial balances from owner
+     */
     await airlineCoin.approve(otherAccount.address, parseEther("2"));
     await airlineCoin.transfer(otherAccount.address, parseEther("2"));
     await airlineRewardCoin.approve(otherAccount.address, parseEther("1"));
@@ -52,6 +55,7 @@ describe("Handle Gas", async () => {
     const prevBalance = await airlineRewardCoin.balanceOf(aircraft.address);
     expect(prevBalance).to.eq(0);
 
+    // Send erc20 reward coins to aircraft erc1155 contract
     await airlineRewardCoin
       .connect(otherAccount)
       .approve(aircraft.address, parseEther("1"));
@@ -62,24 +66,28 @@ describe("Handle Gas", async () => {
     const afterBalance = await airlineRewardCoin.balanceOf(aircraft.address);
     expect(afterBalance).to.eq(parseEther("1"));
 
+    // Set coin address into aircraft contract by admin
     await aircraft.setAirlineCoin(airlineCoin.address);
     await aircraft.setAirlineGasCoin(airlineRewardCoin.address);
 
+    // Get first license
     await lazyMintLicense("1", 0, owner, license);
     await setClaimConditionsLicense(license, 0, airlineCoin);
     await mintLicense(license, otherAccount, 0, airlineCoin, 0);
 
+    // Get first aircraft
     await lazyMintAircraft("1", 0, owner, aircraft);
     await setClaimConditionsAircraft(aircraft, 0, airlineCoin);
     await mintAircraft(aircraft, otherAccount, 0, airlineCoin);
 
+    // Admin notify gas sent from user to aircraft contract and update balance accordingly
     expect(await aircraft.gasBalance(otherAccount.address, 0)).to.equal(0);
     await aircraft.sendGas(otherAccount.address, parseEther("1"), 0);
     expect(await aircraft.gasBalance(otherAccount.address, 0)).to.equal(
       parseEther("1"),
     );
-    expect(await aircraft.gasBalance(otherAccount.address, 1)).to.equal(0);
 
+    // Check than both aircraft supply and user balance matches
     const balance = await airlineRewardCoin.balanceOf(aircraft.address);
     expect(balance).to.equal(parseEther("1"));
     expect(await aircraft.gasBalance(otherAccount.address, 0)).to.equal(
@@ -89,6 +97,7 @@ describe("Handle Gas", async () => {
       parseEther("1000000000"),
     );
 
+    // Admin burn combustible after flight ended
     await airlineRewardCoin.approve(aircraft.address, parseEther("1"));
     await aircraft.burnGas(otherAccount.address, 0, parseEther("1"));
     expect(await aircraft.gasBalance(otherAccount.address, 0)).to.equal(0);

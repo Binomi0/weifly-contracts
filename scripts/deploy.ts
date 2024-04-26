@@ -3,7 +3,7 @@ import deployAircraft from "./aircraft";
 import deployLicense from "./license";
 import deployTokens from "./tokens";
 import deployStaking from "./staking";
-import { parseUnits } from "ethers/lib/utils";
+import { parseEther, parseUnits } from "ethers/lib/utils";
 import deployFlightController from "./flightController";
 
 async function main() {
@@ -27,16 +27,39 @@ async function main() {
   const { airLine, airLineReward, nativeTokenWrapper } =
     await deployTokens(owner);
 
-  await airLine.approve(otherAccount.address, parseUnits("320", "ether"));
-  await airLine.transfer(otherAccount.address, parseUnits("320", "ether"));
+  await airLine.approve(otherAccount.address, parseUnits("321", "ether"));
+  await airLine.transfer(otherAccount.address, parseUnits("321", "ether"));
   await airLine.approve(thirdAccount.address, parseUnits("1", "ether"));
   await airLine.transfer(thirdAccount.address, parseUnits("1", "ether"));
 
-  await deployStaking(accounts, airLine, airLineReward, nativeTokenWrapper);
+  // await deployStaking(accounts, airLine, airLineReward, nativeTokenWrapper);
 
   const license = await deployLicense(accounts, airLine);
   const aircraft = await deployAircraft(accounts, airLine, license);
-  await deployFlightController(accounts, aircraft.address, airLine);
+  // await deployFlightController(accounts, aircraft.address, airLine);
+
+  await airLineReward.approve(otherAccount.address, parseEther("1"));
+  await airLineReward.transfer(otherAccount.address, parseEther("1"));
+
+  await airLineReward
+    .connect(otherAccount)
+    .approve(aircraft.address, parseEther("1"));
+  await airLineReward
+    .connect(otherAccount)
+    .transfer(aircraft.address, parseEther("1"));
+
+  airLineReward.on("Transfer", (...args) => {
+    const [from, to, amount] = args;
+    console.log(from === otherAccount.address);
+    console.log(to === aircraft.address);
+    console.log(parseEther("1").eq(amount));
+  });
+  console.log((await airLineReward.balanceOf(aircraft.address)).toString());
+
+  await airLineReward.approve(aircraft.address, parseEther("1"), {
+    from: aircraft.address,
+  });
+  console.log("Approved");
 
   console.group("----- OTHER ACCOUNT -----");
   console.log(

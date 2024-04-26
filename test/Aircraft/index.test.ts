@@ -4,6 +4,7 @@ import { expect } from "chai";
 import {
   deployAircraftNFT,
   deployAirlineCoin,
+  deployAirlineRewardCoin,
   deployLicenseNFT,
 } from "../../utils";
 
@@ -11,6 +12,7 @@ describe("Aircraft", function () {
   async function deployContracts() {
     const [owner, otherAccount, thirdAccount] = await ethers.getSigners();
     const airlineCoin = await deployAirlineCoin(owner.address);
+    const airlineRewardCoin = await deployAirlineRewardCoin(owner.address);
     const license = await deployLicenseNFT(owner.address);
     const aircraft = await deployAircraftNFT(owner, license.address);
 
@@ -18,6 +20,7 @@ describe("Aircraft", function () {
       license,
       aircraft,
       airlineCoin,
+      airlineRewardCoin,
       owner,
       otherAccount,
       thirdAccount,
@@ -34,7 +37,7 @@ describe("Aircraft", function () {
   });
 
   describe("If is NOT an admin", async function () {
-    it("Should fail white tring to set required license ID", async function () {
+    it("Should fail while trying to set required license ID", async function () {
       const { aircraft } = await loadFixture(deployContracts);
 
       try {

@@ -13,6 +13,19 @@ export async function deployAirlineCoin(owner: string) {
   return airlineCoin;
 }
 
+export async function deployAirlineRewardCoin(owner: string) {
+  const AirlineRewardCoin =
+    await ethers.getContractFactory("AirlineRewardCoin");
+  const airlineRewardCoin = await AirlineRewardCoin.deploy(
+    owner,
+    "Airline Reward Coin",
+    "AIRG",
+  );
+  await airlineRewardCoin.deployed();
+
+  return airlineRewardCoin;
+}
+
 export async function deployLicenseNFT(owner: string) {
   const License = await ethers.getContractFactory("LicenseNFT");
   const license = await License.deploy(

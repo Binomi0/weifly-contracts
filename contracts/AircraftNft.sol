@@ -2,9 +2,17 @@
 pragma solidity ^0.8.13;
 
 import "@thirdweb-dev/contracts/base/ERC1155Drop.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "./AirlineCoin.sol";
+import "./AirlineRewardCoin.sol";
 
 contract AircraftNFT is ERC1155Drop {
+    using SafeMath for uint256;
+
     address public erc1155LicenseAddress;
+    AirlineCoin public airlineCoin;
+    AirlineRewardCoin public airlineGasCoin;
+    mapping(address => mapping(uint256 => uint256)) public gasBalance;
 
     // Admin required license
     mapping(uint256 => uint256) public requiredLicense;
@@ -32,6 +40,65 @@ contract AircraftNFT is ERC1155Drop {
         requiredLicense[1] = 1;
         requiredLicense[2] = 2;
         requiredLicense[3] = 3;
+    }
+
+    function sendGas(
+        address _address,
+        uint256 _amount,
+        uint256 _aircraftId
+    ) public onlyOwner {
+        require(_amount > 0, "Invalid amount");
+
+        // Check if the contract has enough balance
+        require(
+            airlineGasCoin.balanceOf(address(this)) >= _amount,
+            "Insufficient balance"
+        );
+
+        // Ensure the sender owns the specified aircraft
+        require(
+            this.balanceOf(_address, _aircraftId) > 0,
+            "Trying to send gas to a non-owned aircraft"
+        );
+
+        // Update the gas balance
+        gasBalance[_address][_aircraftId] = gasBalance[msg.sender][_aircraftId]
+            .add(_amount);
+    }
+
+    function burnGas(
+        address _address,
+        uint256 _aircraftId,
+        uint256 _amount
+    ) public onlyOwner {
+        require(
+            airlineGasCoin.balanceOf(address(this)) >= _amount,
+            "Insuffient gas balance"
+        );
+
+        // Subtract from internal accounting balance
+        gasBalance[_address][_aircraftId] = gasBalance[_address][_aircraftId]
+            .sub(_amount);
+        // Burn token from airlineGasCoin
+        airlineGasCoin.burn(_amount);
+    }
+
+    function setAirlineCoin(address _address) public onlyOwner {
+        airlineCoin = AirlineCoin(_address);
+    }
+
+    function setAirlineGasCoin(address _address) public onlyOwner {
+        airlineGasCoin = AirlineRewardCoin(_address);
+    }
+
+    function sendERC20Tokens(address _to, uint256 _amount) external {
+        // Ensure the sender has enough tokens approved for spending
+        require(
+            airlineCoin.balanceOf(msg.sender) >= _amount,
+            "Insufficient ERC20 balance"
+        );
+        // Transfer tokens to the specified recipient
+        airlineCoin.transferFrom(msg.sender, _to, _amount);
     }
 
     function setRequiredLicense(

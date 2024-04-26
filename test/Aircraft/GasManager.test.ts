@@ -15,7 +15,7 @@ import {
 } from "../../utils";
 import { ethers } from "hardhat";
 
-describe("Handle Aircraft combustible", async () => {
+describe("[AircraftNFT] Handle combustible", async () => {
   async function deployContracts() {
     const [owner, otherAccount, thirdAccount] = await ethers.getSigners();
     const airlineCoin = await deployAirlineCoin(owner.address);

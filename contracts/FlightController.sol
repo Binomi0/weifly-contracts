@@ -38,11 +38,11 @@ contract FlightController {
     constructor(
         address _defaultAdmin,
         address _aircraftAddress,
-        AirlineCoin _airlineCoin
+        address _airlineCoin
     ) {
         adminAddress = _defaultAdmin;
         aircraftAddress = _aircraftAddress;
-        airlineCoin = _airlineCoin;
+        airlineCoin = AirlineCoin(_airlineCoin);
     }
 
     function _calculateRewards(address _pilot) private view returns (uint256) {

@@ -9,9 +9,9 @@ import "./AirlineRewardCoin.sol";
 contract AircraftNFT is ERC1155Drop {
     using SafeMath for uint256;
 
-    address public erc1155LicenseAddress;
-    AirlineCoin public airlineCoin;
-    AirlineRewardCoin public airlineGasCoin;
+    address private erc1155LicenseAddress;
+    AirlineCoin private airlineCoin;
+    AirlineRewardCoin private airlineGasCoin;
     mapping(address => mapping(uint256 => uint256)) public gasBalance;
 
     // Admin required license
@@ -89,16 +89,6 @@ contract AircraftNFT is ERC1155Drop {
 
     function setAirlineGasCoin(address _address) public onlyOwner {
         airlineGasCoin = AirlineRewardCoin(_address);
-    }
-
-    function sendERC20Tokens(address _to, uint256 _amount) external {
-        // Ensure the sender has enough tokens approved for spending
-        require(
-            airlineCoin.balanceOf(msg.sender) >= _amount,
-            "Insufficient ERC20 balance"
-        );
-        // Transfer tokens to the specified recipient
-        airlineCoin.transferFrom(msg.sender, _to, _amount);
     }
 
     function setRequiredLicense(

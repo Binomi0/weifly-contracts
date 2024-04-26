@@ -44,11 +44,7 @@ contract StakingAirline is Staking20Base {
         address _staker,
         uint256 _rewards
     ) internal virtual override {
-        console.log("rewards", _rewards);
-        console.log("minRewardWithDraw", minRewardWithDraw);
-        console.log("rewardTokenBalance", rewardTokenBalance);
         require(_rewards >= minRewardWithDraw, "Min reward withdraw is 100");
-        console.log("Rewards is more than min");
         // require(block.number > minRewardBlock);
 
         // rewardTokenBalance -= _rewards;

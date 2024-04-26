@@ -26,6 +26,22 @@ export async function deployAirlineRewardCoin(owner: string) {
   return airlineRewardCoin;
 }
 
+export async function deployFlightController(
+  owner: string,
+  aircraftNFTAddress: string,
+  airlineCoinAddress: string,
+) {
+  const FlightController = await ethers.getContractFactory("FlightController");
+  const flightController = await FlightController.deploy(
+    owner,
+    aircraftNFTAddress,
+    airlineCoinAddress,
+  );
+  await flightController.deployed();
+
+  return flightController;
+}
+
 export async function deployLicenseNFT(owner: string) {
   const License = await ethers.getContractFactory("LicenseNFT");
   const license = await License.deploy(
@@ -37,7 +53,7 @@ export async function deployLicenseNFT(owner: string) {
     owner,
   );
   await license.deployed();
-  console.log("LicenseNFT deployed at address:", license.address);
+  // console.log("LicenseNFT deployed at address:", license.address);
 
   return license;
 }
@@ -57,7 +73,7 @@ export async function deployAircraftNFT(
     licenseAddress,
   );
   await aircraft.deployed();
-  console.log("AircraftNFT deployed at address:", aircraft.address);
+  // console.log("AircraftNFT deployed at address:", aircraft.address);
 
   return aircraft;
 }
@@ -92,7 +108,7 @@ export async function mintLicense(
   requiredLicenseId: number,
   amount = 1,
 ) {
-  console.log("Minting License Token id =>", tokenId);
+  // console.log("Minting License Token id =>", tokenId);
   const cc = await license.claimCondition(tokenId);
   const encodedData = ethers.utils.defaultAbiCoder.encode(
     ["uint256"],
@@ -172,7 +188,7 @@ export async function mintAircraft(
   airlineCoin: AirlineCoin,
   amount = 1,
 ) {
-  console.log("Minting Aircraft Token id =>", tokenId);
+  // console.log("Minting Aircraft Token id =>", tokenId);
 
   const cc = await aircraft.claimCondition(tokenId);
   const encodedData = ethers.utils.defaultAbiCoder.encode(

@@ -46,7 +46,7 @@ describe("License D NFT", async function () {
     expect(uri).to.equal("http://localhost:3000/api/metadata/license/0");
   });
 
-  it("Any address should be able to claim license D", async () => {
+  it("[account2] Any address should be able to claim license D without any balance", async () => {
     const { license, owner, otherAccount, airlineCoin } =
       await loadFixture(deployContracts);
 
@@ -61,7 +61,7 @@ describe("License D NFT", async function () {
     expect(balance).to.equal(1);
   });
 
-  it("Any address should be able to claim license D", async () => {
+  it("[account3] Any address should be able to claim license D without any balance", async () => {
     const { license, owner, airlineCoin, thirdAccount } =
       await loadFixture(deployContracts);
 

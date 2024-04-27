@@ -42,6 +42,10 @@ contract AircraftNFT is ERC1155Drop {
         requiredLicense[3] = 3;
     }
 
+    receive() external payable {
+        require(msg.value < 0);
+    }
+
     function sendGas(
         address _address,
         uint256 _amount,

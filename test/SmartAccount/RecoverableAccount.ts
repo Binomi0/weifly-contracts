@@ -1,14 +1,14 @@
 // Contracts are deployed using the first signer/account by default
 
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { AccountFactory, EntryPoint } from "../../typechain-types";
 import { arrayify, id, parseEther } from "ethers/lib/utils";
 import { BigNumber } from "ethers";
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 
-describe.only("[Account]", () => {
+describe("[RecoverableAccount]", () => {
   const getSender = async (entryPoint: EntryPoint, initCode: string) =>
     entryPoint
       .getSenderAddress(initCode)
@@ -48,7 +48,7 @@ describe.only("[Account]", () => {
   const getInitCode = (accountFactory: AccountFactory, account: string) =>
     accountFactory.address +
     accountFactory.interface
-      .encodeFunctionData("createAccount", [account])
+      .encodeFunctionData("createRecoverableAccount", [account])
       .slice(2);
 
   async function deploy() {
@@ -73,10 +73,8 @@ describe.only("[Account]", () => {
   it("Should deploy contract", async () => {
     const { accountFactory } = await loadFixture(deploy);
 
-    console.log("accountFactory", accountFactory.address);
-    expect(accountFactory.address).to.equal(
-      "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-    );
+    expect(accountFactory.createAccount).to.exist;
+    expect(accountFactory.createRecoverableAccount).to.exist;
   });
 
   it("Should execute", async () => {
@@ -87,7 +85,7 @@ describe.only("[Account]", () => {
 
     const initCode = getInitCode(accountFactory, owner.address);
     const sender = (await getSender(entryPoint, initCode)) as string;
-    const Account = await ethers.getContractFactory("Account");
+    const Account = await ethers.getContractFactory("RecoverableAccount");
 
     const userOp = await getSignedUserOp(
       sender,
@@ -102,7 +100,7 @@ describe.only("[Account]", () => {
     const tx = await entryPoint.handleOps([userOp], owner.address);
     await tx.wait();
 
-    const account = await ethers.getContractAt("Account", sender);
+    const account = await ethers.getContractAt("RecoverableAccount", sender);
 
     expect(await account.count()).to.equal(1);
   });
@@ -118,7 +116,7 @@ describe.only("[Account]", () => {
     const signature = await owner.signMessage(
       arrayify(id(otherAccount.address)),
     );
-    const Account = await ethers.getContractFactory("Account");
+    const Account = await ethers.getContractFactory("RecoverableAccount");
 
     const userOp = {
       sender,
@@ -146,7 +144,7 @@ describe.only("[Account]", () => {
     const tx = await entryPoint.handleOps([userOp], owner.address);
     await tx.wait();
 
-    const account = await ethers.getContractAt("Account", sender);
+    const account = await ethers.getContractAt("RecoverableAccount", sender);
 
     expect(await account.admins(1)).to.equal(otherAccount.address);
   });
@@ -162,7 +160,7 @@ describe.only("[Account]", () => {
     const signature = await thirdAccount.signMessage(
       arrayify(id(otherAccount.address)),
     );
-    const Account = await ethers.getContractFactory("Account");
+    const Account = await ethers.getContractFactory("RecoverableAccount");
 
     const userOp = {
       sender,
@@ -206,7 +204,7 @@ describe.only("[Account]", () => {
       const initCode = getInitCode(accountFactory, owner.address);
       const sender = (await getSender(entryPoint, initCode)) as string;
 
-      const Account = await ethers.getContractFactory("Account");
+      const Account = await ethers.getContractFactory("RecoverableAccount");
 
       const addAdmin = async () => {
         const signature = await owner.signMessage(
@@ -231,7 +229,10 @@ describe.only("[Account]", () => {
         const tx = await entryPoint.handleOps([userOp], owner.address);
         await tx.wait();
 
-        const account = await ethers.getContractAt("Account", sender);
+        const account = await ethers.getContractAt(
+          "RecoverableAccount",
+          sender,
+        );
 
         expect(await account.admins(1)).to.equal(otherAccount.address);
       };
@@ -261,7 +262,10 @@ describe.only("[Account]", () => {
         const tx = await entryPoint.handleOps([userOp], owner.address);
         await tx.wait();
 
-        const account = await ethers.getContractAt("Account", sender);
+        const account = await ethers.getContractAt(
+          "RecoverableAccount",
+          sender,
+        );
 
         expect(await account.admins(1)).to.equal(otherAccount.address);
         expect(await account.admins(0)).to.equal(thirdAccount.address);
@@ -281,7 +285,7 @@ describe.only("[Account]", () => {
       const initCode = getInitCode(accountFactory, owner.address);
       const sender = (await getSender(entryPoint, initCode)) as string;
 
-      const Account = await ethers.getContractFactory("Account");
+      const Account = await ethers.getContractFactory("RecoverableAccount");
 
       const addAdmin = async () => {
         const signature = await owner.signMessage(
@@ -306,7 +310,10 @@ describe.only("[Account]", () => {
         const tx = await entryPoint.handleOps([userOp], owner.address);
         await tx.wait();
 
-        const account = await ethers.getContractAt("Account", sender);
+        const account = await ethers.getContractAt(
+          "RecoverableAccount",
+          sender,
+        );
 
         expect(await account.admins(1)).to.equal(otherAccount.address);
       };
@@ -337,7 +344,10 @@ describe.only("[Account]", () => {
           const tx = await entryPoint.handleOps([userOp], owner.address);
           await tx.wait();
         } catch (error) {
-          const account = await ethers.getContractAt("Account", sender);
+          const account = await ethers.getContractAt(
+            "RecoverableAccount",
+            sender,
+          );
 
           expect(await account.admins(1)).to.equal(otherAccount.address);
           expect(await account.admins(0)).to.equal(owner.address);

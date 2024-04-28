@@ -33,7 +33,7 @@ async function main() {
     throw new Error("Missing sender");
   }
 
-  const Account = await ethers.getContractFactory("Account");
+  const Account = await ethers.getContractFactory("BaseAccount");
   const signature = await signer.signMessage(arrayify(id(account2)));
   const userOp = {
     sender,

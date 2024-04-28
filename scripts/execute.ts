@@ -9,7 +9,7 @@ import {
 import { parseEther } from "ethers/lib/utils";
 
 async function main() {
-  const account = await ethers.getContractAt("Account", ACCOUNT_ADDR);
+  const account = await ethers.getContractAt("BaseAccount", ACCOUNT_ADDR);
   const coin = await ethers.getContractAt("AirlineCoin", COIN_ADDR);
   const reward = await ethers.getContractAt("AirlineRewardCoin", REWARD_ADDR);
   const staking = await ethers.getContractAt("StakingAirline", STAKING_ADDR);

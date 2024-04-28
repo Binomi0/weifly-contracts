@@ -1,13 +1,14 @@
 import { ethers } from "hardhat";
-import { parseEther } from "ethers/lib/utils";
+import { arrayify, id, parseEther } from "ethers/lib/utils";
 import { AF_ADDR, EP_ADDR, PM_ADDR } from ".";
 
 async function main() {
   const entryPoint = await ethers.getContractAt("EntryPoint", EP_ADDR);
   const accountFactory = await ethers.getContractFactory("AccountFactory");
 
-  const [signer] = await ethers.getSigners();
+  const [signer, signer2] = await ethers.getSigners();
   const account0 = await signer.getAddress();
+  const account2 = await signer2.getAddress();
 
   // InitCode is only used to create-deploy a new smart Account Address into a blockchain
   // So if entryPoint receives initcode other than 0x, it will understand that it's time to create it
@@ -32,26 +33,25 @@ async function main() {
     throw new Error("Missing sender");
   }
 
-  // await entryPoint.depositTo(EP_ADDR, { value: parseEther("100") });
-  // await entryPoint.depositTo(PM_ADDR, { value: parseEther("100") });
-
   const Account = await ethers.getContractFactory("Account");
-  /**
-   * CALL EXECUTE
-   *  */
+  const signature = await signer.signMessage(arrayify(id(account2)));
   const userOp = {
     sender,
     nonce: await entryPoint.getNonce(sender, 0),
     // initCode,
     initCode: "0x",
-    callData: Account.interface.encodeFunctionData("execute"),
+    callData: Account.interface.encodeFunctionData("addAdmin", [
+      arrayify(id(account2)),
+      signature,
+      account2,
+    ]),
     callGasLimit: 600_000,
     verificationGasLimit: 600_000,
     preVerificationGas: 200_000,
     maxFeePerGas: ethers.utils.parseUnits("10", "gwei"),
     maxPriorityFeePerGas: ethers.utils.parseUnits("5", "gwei"),
-    paymasterAndData: PM_ADDR,
-    signature: "0x",
+    paymasterAndData: PM_ADDR, // we're not using a paymaster, for now
+    signature: "0x", //
   };
 
   const userOpHash = await entryPoint.getUserOpHash(userOp);

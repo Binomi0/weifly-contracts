@@ -6,6 +6,8 @@ import deployStaking from "./staking";
 import { parseEther, parseUnits } from "ethers/lib/utils";
 import deployFlightController from "./flightController";
 
+const SMART_ACCOUNT = "0xcb3356cd40014fb43992325080330d96b2d7732f";
+
 async function main() {
   const accounts = await ethers.getSigners();
   console.group("---- SETUP ACCOUNTS ----");
@@ -34,32 +36,15 @@ async function main() {
 
   // await deployStaking(accounts, airLine, airLineReward, nativeTokenWrapper);
 
-  const license = await deployLicense(accounts, airLine);
-  const aircraft = await deployAircraft(accounts, airLine, license);
+  // const license = await deployLicense(accounts, airLine);
+  // const aircraft = await deployAircraft(accounts, airLine, license);
+
   // await deployFlightController(accounts, aircraft.address, airLine);
 
-  await airLineReward.approve(otherAccount.address, parseEther("1"));
-  await airLineReward.transfer(otherAccount.address, parseEther("1"));
+  // await airLine.approve(SMART_ACCOUNT, parseEther("100"));
+  // await airLine.transfer(SMART_ACCOUNT, parseEther("100"));
 
-  await airLineReward
-    .connect(otherAccount)
-    .approve(aircraft.address, parseEther("1"));
-  await airLineReward
-    .connect(otherAccount)
-    .transfer(aircraft.address, parseEther("1"));
-
-  airLineReward.on("Transfer", (...args) => {
-    const [from, to, amount] = args;
-    console.log(from === otherAccount.address);
-    console.log(to === aircraft.address);
-    console.log(parseEther("1").eq(amount));
-  });
-  console.log((await airLineReward.balanceOf(aircraft.address)).toString());
-
-  await airLineReward.approve(aircraft.address, parseEther("1"), {
-    from: aircraft.address,
-  });
-  console.log("Approved");
+  // console.log((await airLine.balanceOf(SMART_ACCOUNT)).toString());
 
   console.group("----- OTHER ACCOUNT -----");
   console.log(

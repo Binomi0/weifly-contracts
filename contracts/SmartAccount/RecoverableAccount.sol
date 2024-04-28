@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "../core/Recoverable.sol";
 import "hardhat/console.sol";
 
-contract Account is IAccount, Recoverable {
+contract RecoverableAccount is IAccount, Recoverable {
     uint256 public count;
 
     constructor(address _owner) Recoverable(_owner) {}

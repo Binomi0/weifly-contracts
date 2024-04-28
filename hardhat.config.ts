@@ -19,9 +19,9 @@ const config: HardhatUserConfig = {
     },
   },
   networks: {
-    bundler: {
-      url: "http://localhost:3000/rpc",
-    },
+    // bundler: {
+    //   url: "http://localhost:3000/rpc",
+    // },
     // remote: {
     //   url: "http://192.168.50.34:8545",
     // },

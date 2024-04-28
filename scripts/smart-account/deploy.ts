@@ -26,7 +26,7 @@ async function main() {
 
     console.log(accountFactory.address);
   } else {
-    console.log(AF_ADDR);
+    console.log(AF_ADDR); // AF_ADDR
   }
 
   const pm = await ethers.provider.getCode(PM_ADDR);

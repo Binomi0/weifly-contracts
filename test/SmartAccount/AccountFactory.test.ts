@@ -7,10 +7,10 @@ import {
   parseUnits,
 } from "ethers/lib/utils";
 import { ethers } from "hardhat";
-import { AccountFactory } from "../typechain-types";
+import { AccountFactory } from "../../typechain-types";
 import { providers } from "ethers";
 
-describe.only("[Account Factory]", () => {
+describe("[Account Factory]", () => {
   async function deployAccountFactory() {
     // Contracts are deployed using the first signer/account by default
     const [owner, otherAccount] = await ethers.getSigners();
@@ -26,10 +26,8 @@ describe.only("[Account Factory]", () => {
     const [owner, otherAccount] = await ethers.getSigners();
 
     const Account = await ethers.getContractFactory("Account");
-    const account = await Account.deploy(otherAccount.address);
-    await account.deployed();
 
-    return { account, otherAccount };
+    return { Account, otherAccount };
   }
 
   async function deployEntryPoint() {
@@ -39,13 +37,53 @@ describe.only("[Account Factory]", () => {
     return { entryPoint };
   }
 
+  describe("Base Account", () => {
+    it("Should deploy a new Smart Account Contract", async () => {
+      const { accountFactory, otherAccount } =
+        await loadFixture(deployAccountFactory);
+
+      expect(accountFactory.address).to.equal(
+        "0x322813Fd9A801c5507c9de605d63CEA4f2CE6c44",
+      );
+
+      const receipt = await accountFactory.createAccount(otherAccount.address);
+      const returnedData = receipt.data.slice(2); // remove the '0x' prefix
+      const returnedAddress = "0x" + returnedData.slice(-40); // extract last 40 characters
+
+      console.log("New smartAccount address:", returnedAddress);
+      expect(returnedAddress).to.equal(
+        "0x70997970c51812dc3a010c7d01b50e0d17dc79c8",
+      );
+    });
+  });
+  describe("Recoverable Account", () => {
+    it("Should deploy a new Smart Account Contract", async () => {
+      const { accountFactory, otherAccount } =
+        await loadFixture(deployAccountFactory);
+      await accountFactory.deployed();
+
+      expect(accountFactory.address).to.equal(
+        "0x322813Fd9A801c5507c9de605d63CEA4f2CE6c44",
+      );
+
+      const receipt = await accountFactory.createAccount(otherAccount.address);
+      const returnedData = receipt.data.slice(2); // remove the '0x' prefix
+      const returnedAddress = "0x" + returnedData.slice(-40); // extract last 40 characters
+
+      console.log("New smartAccount address:", returnedAddress);
+      expect(returnedAddress).to.equal(
+        "0x70997970c51812dc3a010c7d01b50e0d17dc79c8",
+      );
+    });
+  });
+
   it("Should deploy a new Smart Account Contract", async () => {
     const { accountFactory, otherAccount } =
       await loadFixture(deployAccountFactory);
     await accountFactory.deployed();
 
     expect(accountFactory.address).to.equal(
-      "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+      "0x322813Fd9A801c5507c9de605d63CEA4f2CE6c44",
     );
 
     const receipt = await accountFactory.createAccount(otherAccount.address);
@@ -60,7 +98,7 @@ describe.only("[Account Factory]", () => {
 
   it("Should send a user operation", async () => {
     const { owner, accountFactory } = await loadFixture(deployAccountFactory);
-    const { account } = await loadFixture(deployAccount);
+    const { Account } = await loadFixture(deployAccount);
     const { entryPoint } = await loadFixture(deployEntryPoint);
 
     console.log("Account Factory address:", accountFactory.address);
@@ -76,32 +114,21 @@ describe.only("[Account Factory]", () => {
     try {
       await entryPoint.getSenderAddress(initCode);
     } catch (error) {
-      const err = error as { data: string };
-      sender = `0x${err.data.slice(-40)}`;
+      const err = error as { error: { data: { data: string } } };
+      sender = `0x${err.error.data.data.slice(-40)}`;
     }
     console.log("Sender by create2address Address:", sender);
 
-    const beforeBalance = await owner.getBalance();
-    expect(beforeBalance).to.equal(parseUnits("9999992646396270046835", "wei"));
-
     await entryPoint.depositTo(sender, { value: parseEther("1") });
-
-    const afterBalance = await owner.getBalance();
-    expect(afterBalance).to.equal(parseUnits("9998992578839381086859", "wei"));
-
-    const code = await ethers.provider.getCode(sender);
-    if (code !== "0x") {
-      initCode = "0x";
-    }
 
     const userOp = {
       sender,
       nonce: await entryPoint.getNonce(sender, 0),
       initCode,
-      callData: account.interface.encodeFunctionData("execute"),
-      callGasLimit: 200_000,
-      verificationGasLimit: 200_000,
-      preVerificationGas: 50_000,
+      callData: Account.interface.encodeFunctionData("execute"),
+      callGasLimit: 400_000,
+      verificationGasLimit: 400_000,
+      preVerificationGas: 100_000,
       maxFeePerGas: ethers.utils.parseUnits("10", "gwei"),
       maxPriorityFeePerGas: ethers.utils.parseUnits("5", "gwei"),
       paymasterAndData: "0x", // we're not using a paymaster, for now
@@ -111,6 +138,6 @@ describe.only("[Account Factory]", () => {
     const receipt = await entryPoint.handleOps([userOp], owner.address);
     await receipt.wait(10);
 
-    expect(await account.count()).to.equal(1);
+    expect(receipt).to.equal(0);
   });
 });

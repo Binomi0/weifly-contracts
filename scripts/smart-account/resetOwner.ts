@@ -11,14 +11,14 @@ async function main() {
   const account2 = await signer2.getAddress();
   const account3 = await signer3.getAddress();
 
-  // await accountF.createAccount(account0);
+  // await accountF.createBaseAccount(account0);
 
   // InitCode is only used to create-deploy a new smart Account Address into a blockchain
   // So if entryPoint receives initcode other than 0x, it will understand that it's time to create it
   let initCode =
     AF_ADDR +
     accountFactory.interface
-      .encodeFunctionData("createAccount", [account0])
+      .encodeFunctionData("createBaseAccount", [account0])
       .slice(2);
   console.log("Init code", initCode);
 

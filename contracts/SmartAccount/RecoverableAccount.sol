@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity ^0.8.12;
+pragma solidity ^0.8.13;
 
 import "@account-abstraction/contracts/interfaces/IAccount.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "../core/Recoverable.sol";
+import "../core/AirlineUser.sol";
 import "hardhat/console.sol";
 
-contract RecoverableAccount is IAccount, Recoverable {
+contract RecoverableAccount is IAccount, Recoverable, AirlineUser {
     uint256 public count;
 
     constructor(address _owner) Recoverable(_owner) {}

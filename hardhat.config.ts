@@ -3,10 +3,22 @@ import "@nomicfoundation/hardhat-toolbox";
 // import '@nomicfoundation/hardhat-verify'
 import { vars } from "hardhat/config";
 import "solidity-coverage";
+import "hardhat-gas-reporter";
 
+const COINMARKETCAP_API_KEY = vars.get(
+  "COINMARKETCAP_API_KEY",
+  "eb317b12-ae71-4ecb-84cb-9fcaf9459954",
+);
 const ETHERSCAN_API_KEY = vars.get("ETHERSCAN_API_KEY");
 
 const config: HardhatUserConfig = {
+  gasReporter: {
+    enabled: !!process.env.REPORT,
+    currency: "EUR",
+    L1: "ethereum",
+    coinmarketcap: COINMARKETCAP_API_KEY,
+    L1Etherscan: ETHERSCAN_API_KEY,
+  },
   defaultNetwork: "localhost",
   // etherscan: { apiKey: ETHERSCAN_API_KEY },
   solidity: {

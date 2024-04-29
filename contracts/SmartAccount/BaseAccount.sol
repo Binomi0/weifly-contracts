@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity ^0.8.12;
+pragma solidity ^0.8.13;
 
 import "@account-abstraction/contracts/interfaces/IAccount.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "../core/AirlineUser.sol";
 
-contract BaseAccount is IAccount {
+contract BaseAccount is IAccount, AirlineUser {
     uint256 public count;
     address public owner;
 

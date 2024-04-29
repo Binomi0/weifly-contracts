@@ -21,7 +21,9 @@ describe("[Account Factory]", () => {
     it("Should deploy a new Smart Account Contract", async () => {
       const { accountFactory, otherAccount } = await loadFixture(deploy);
 
-      const receipt = await accountFactory.createAccount(otherAccount.address);
+      const receipt = await accountFactory.createBaseAccount(
+        otherAccount.address,
+      );
       const returnedData = receipt.data.slice(2); // remove the '0x' prefix
       const returnedAddress = "0x" + returnedData.slice(-40); // extract last 40 characters
 

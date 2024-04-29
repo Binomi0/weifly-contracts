@@ -10,9 +10,14 @@ import { BigNumber } from "ethers";
 
 describe("[BaseAccount]", () => {
   const getSender = async (entryPoint: EntryPoint, initCode: string) =>
-    entryPoint
-      .getSenderAddress(initCode)
-      .catch((err) => `0x${err.data.slice(-40)}`);
+    entryPoint.getSenderAddress(initCode).catch((err) => {
+      if (err.data) {
+        return `0x${err.data.slice(-40)}`;
+      } else if (err.error) {
+        return `0x${err.error.data.data.slice(-40)}`;
+      }
+      throw new Error("Wrong data from getSenderAddress");
+    });
 
   async function getSignedUserOp(
     sender: string,
@@ -48,7 +53,7 @@ describe("[BaseAccount]", () => {
   const getInitCode = (accountFactory: AccountFactory, account: string) =>
     accountFactory.address +
     accountFactory.interface
-      .encodeFunctionData("createAccount", [account])
+      .encodeFunctionData("createBaseAccount", [account])
       .slice(2);
 
   async function deploy() {
@@ -73,7 +78,7 @@ describe("[BaseAccount]", () => {
   it("Should deploy contract", async () => {
     const { accountFactory } = await loadFixture(deploy);
 
-    expect(accountFactory.createAccount).to.exist;
+    expect(accountFactory.createBaseAccount).to.exist;
     expect(accountFactory.createRecoverableAccount).to.exist;
   });
 

@@ -14,7 +14,7 @@ async function main() {
   let initCode =
     AF_ADDR +
     accountFactory.interface
-      .encodeFunctionData("createAccount", [account0])
+      .encodeFunctionData("createBaseAccount", [account0])
       .slice(2);
   console.log("Init code", initCode);
 

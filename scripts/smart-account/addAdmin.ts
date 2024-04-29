@@ -15,7 +15,7 @@ async function main() {
   let initCode =
     AF_ADDR +
     accountFactory.interface
-      .encodeFunctionData("createAccount", [account0])
+      .encodeFunctionData("createRecoverableAccount", [account0])
       .slice(2);
   console.log("Init code", initCode);
 

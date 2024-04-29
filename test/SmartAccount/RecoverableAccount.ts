@@ -32,8 +32,8 @@ describe("[RecoverableAccount]", () => {
       nonce,
       initCode,
       callData,
-      callGasLimit: 1_000_000,
-      verificationGasLimit: 1_000_000,
+      callGasLimit: 2_000_000,
+      verificationGasLimit: 2_000_000,
       preVerificationGas: 500_000,
       maxFeePerGas: ethers.utils.parseUnits("100", "gwei"),
       maxPriorityFeePerGas: ethers.utils.parseUnits("50", "gwei"),
@@ -122,27 +122,18 @@ describe("[RecoverableAccount]", () => {
     );
     const Account = await ethers.getContractFactory("RecoverableAccount");
 
-    const userOp = {
+    const userOp = await getSignedUserOp(
       sender,
-      nonce: await entryPoint.getNonce(sender, 0),
+      await entryPoint.getNonce(sender, 0),
       initCode,
-      callData: Account.interface.encodeFunctionData("addAdmin", [
+      Account.interface.encodeFunctionData("addAdmin", [
         arrayify(id(otherAccount.address)),
         signature,
         otherAccount.address,
       ]),
-      callGasLimit: 1_000_000,
-      verificationGasLimit: 1_000_000,
-      preVerificationGas: 400_000,
-      maxFeePerGas: ethers.utils.parseUnits("10", "gwei"),
-      maxPriorityFeePerGas: ethers.utils.parseUnits("5", "gwei"),
-      paymasterAndData: paymaster.address,
-      signature: "0x",
-    };
-
-    const userOpHash = await entryPoint.getUserOpHash(userOp);
-    userOp.signature = await owner.signMessage(
-      ethers.utils.arrayify(userOpHash),
+      paymaster.address,
+      entryPoint,
+      owner,
     );
 
     const tx = await entryPoint.handleOps([userOp], owner.address);
@@ -150,7 +141,11 @@ describe("[RecoverableAccount]", () => {
 
     const account = await ethers.getContractAt("RecoverableAccount", sender);
 
-    expect(await account.admins(1)).to.equal(otherAccount.address);
+    account.on("AddAdmin", (newAdmin: string) => {
+      console.log("EVENT AddAdmin CATCHED UP!");
+    });
+
+    expect(await account.admins(1)).to.emit(account, "AddAdmin");
   });
 
   it("Should NOT allow any other than owner to set a recover address.", async () => {

@@ -4,6 +4,7 @@ import "@nomicfoundation/hardhat-toolbox";
 import { vars } from "hardhat/config";
 import "solidity-coverage";
 import "hardhat-gas-reporter";
+import "@nomicfoundation/hardhat-chai-matchers";
 
 const COINMARKETCAP_API_KEY = vars.get(
   "COINMARKETCAP_API_KEY",
@@ -19,7 +20,7 @@ const config: HardhatUserConfig = {
     coinmarketcap: COINMARKETCAP_API_KEY,
     L1Etherscan: ETHERSCAN_API_KEY,
   },
-  defaultNetwork: "localhost",
+  defaultNetwork: "hardhat",
   // etherscan: { apiKey: ETHERSCAN_API_KEY },
   solidity: {
     version: "0.8.13",

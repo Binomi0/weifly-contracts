@@ -18,14 +18,14 @@ contract AirlineUser {
     constructor() {}
 
     function connectToAirline(
-        address _airline,
+        address payable _airline,
         address _pilot,
         uint8 _level
     ) external notInAirlne {
         Airline airline = Airline(_airline);
-        if (airline.isOpen() == true) {
-            airline.joinAirline(_pilot, _level);
-            airlineAddr = _airline;
-        }
+        require(airline.isOpen(), "Airline is closed at this time");
+
+        airline.joinAirline(_pilot, _level);
+        airlineAddr = _airline;
     }
 }

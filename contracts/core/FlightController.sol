@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.13;
 
-import "./AirlineCoin.sol";
-import "./AircraftNft.sol";
+import "./tokens/AirlineCoin.sol";
+import "./nfts/AircraftNft.sol";
 
 contract FlightController {
     uint256 public prize;

@@ -25,7 +25,7 @@ contract Recoverable is IRecoverable {
         address _recover
     ) public {
         address recovered = ECDSA.recover(
-            ECDSA.toEthSignedMessageHash(_recoverSigned),
+            MessageHashUtils.toEthSignedMessageHash(_recoverSigned),
             _signature
         );
 
@@ -47,7 +47,7 @@ contract Recoverable is IRecoverable {
         address _newOwner
     ) public {
         address recovered = ECDSA.recover(
-            ECDSA.toEthSignedMessageHash(_newOwnerSigned),
+            MessageHashUtils.toEthSignedMessageHash(_newOwnerSigned),
             _signature
         );
 

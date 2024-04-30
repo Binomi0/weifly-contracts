@@ -25,7 +25,7 @@ contract Airline is IAirline {
      */
     function closeAirline(bytes memory signature, bytes32 senderHash) external {
         address recovered = ECDSA.recover(
-            ECDSA.toEthSignedMessageHash(senderHash),
+            MessageHashUtils.toEthSignedMessageHash(senderHash),
             signature
         );
 
@@ -41,7 +41,7 @@ contract Airline is IAirline {
      */
     function openAirline(bytes memory signature, bytes32 senderHash) external {
         address recovered = ECDSA.recover(
-            ECDSA.toEthSignedMessageHash(senderHash),
+            MessageHashUtils.toEthSignedMessageHash(senderHash),
             signature
         );
 

@@ -2,12 +2,12 @@
 pragma solidity ^0.8.13;
 
 import "@thirdweb-dev/contracts/base/ERC1155Drop.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "@openzeppelin/contracts/utils/math/Math.sol";
 import "../tokens/AirlineCoin.sol";
 import "../tokens/AirlineRewardCoin.sol";
 
 contract AircraftNFT is ERC1155Drop {
-    using SafeMath for uint256;
+    using Math for uint256;
 
     address private erc1155LicenseAddress;
     AirlineCoin private airlineCoin;

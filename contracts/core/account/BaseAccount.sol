@@ -19,7 +19,7 @@ contract BaseAccount is IAccount, AirlineUser {
         uint256
     ) external view returns (uint256 validationData) {
         address recovered = ECDSA.recover(
-            ECDSA.toEthSignedMessageHash(userOpHash),
+            MessageHashUtils.toEthSignedMessageHash(userOpHash),
             userOp.signature
         );
 

@@ -2,6 +2,7 @@
 pragma solidity ^0.8.13;
 
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 import "../interfaces/IRecoverable.sol";
 
 contract Recoverable is IRecoverable {
@@ -25,7 +26,7 @@ contract Recoverable is IRecoverable {
         address _recover
     ) public {
         address recovered = ECDSA.recover(
-            ECDSA.toEthSignedMessageHash(_recoverSigned),
+            MessageHashUtils.toEthSignedMessageHash(_recoverSigned),
             _signature
         );
 
@@ -47,7 +48,7 @@ contract Recoverable is IRecoverable {
         address _newOwner
     ) public {
         address recovered = ECDSA.recover(
-            ECDSA.toEthSignedMessageHash(_newOwnerSigned),
+            MessageHashUtils.toEthSignedMessageHash(_newOwnerSigned),
             _signature
         );
 

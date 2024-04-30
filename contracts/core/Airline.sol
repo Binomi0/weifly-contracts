@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.23;
 
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 import "../interfaces/IAirline.sol";
 
 contract Airline is IAirline {
@@ -25,7 +26,7 @@ contract Airline is IAirline {
      */
     function closeAirline(bytes memory signature, bytes32 senderHash) external {
         address recovered = ECDSA.recover(
-            ECDSA.toEthSignedMessageHash(senderHash),
+            MessageHashUtils.toEthSignedMessageHash(senderHash),
             signature
         );
 
@@ -41,7 +42,7 @@ contract Airline is IAirline {
      */
     function openAirline(bytes memory signature, bytes32 senderHash) external {
         address recovered = ECDSA.recover(
-            ECDSA.toEthSignedMessageHash(senderHash),
+            MessageHashUtils.toEthSignedMessageHash(senderHash),
             signature
         );
 

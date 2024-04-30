@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.23;
 
 import "@thirdweb-dev/contracts/base/ERC1155Drop.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "@openzeppelin/contracts/utils/math/Math.sol";
 import "../tokens/AirlineCoin.sol";
 import "../tokens/AirlineRewardCoin.sol";
 
 contract AircraftNFT is ERC1155Drop {
-    using SafeMath for uint256;
+    using Math for uint256;
 
     address private erc1155LicenseAddress;
     AirlineCoin private airlineCoin;
@@ -65,9 +65,15 @@ contract AircraftNFT is ERC1155Drop {
             "Trying to send gas to a non-owned aircraft"
         );
 
-        // Update the gas balance
-        gasBalance[_address][_aircraftId] = gasBalance[msg.sender][_aircraftId]
-            .add(_amount);
+        (bool success, uint256 _total) = Math.tryAdd(
+            gasBalance[_address][_aircraftId],
+            _amount
+        );
+
+        if (success) {
+            // Update the gas balance
+            gasBalance[_address][_aircraftId] = _total;
+        }
     }
 
     function burnGas(
@@ -80,9 +86,15 @@ contract AircraftNFT is ERC1155Drop {
             "Insuffient gas balance"
         );
 
-        // Subtract from internal accounting balance
-        gasBalance[_address][_aircraftId] = gasBalance[_address][_aircraftId]
-            .sub(_amount);
+        (bool success, uint256 _total) = Math.trySub(
+            gasBalance[_address][_aircraftId],
+            _amount
+        );
+
+        if (success) {
+            // Subtract from internal accounting balance
+            gasBalance[_address][_aircraftId] = _total;
+        }
         // Burn token from airlineGasCoin
         airlineGasCoin.burn(_amount);
     }

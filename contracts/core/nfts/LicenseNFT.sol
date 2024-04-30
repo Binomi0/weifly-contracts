@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.23;
 
 import "@thirdweb-dev/contracts/base/ERC1155Drop.sol";
 import "hardhat/console.sol";

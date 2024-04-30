@@ -23,7 +23,7 @@ const config: HardhatUserConfig = {
   defaultNetwork: "hardhat",
   // etherscan: { apiKey: ETHERSCAN_API_KEY },
   solidity: {
-    version: "0.8.13",
+    version: "0.8.23",
     settings: {
       optimizer: {
         enabled: true,

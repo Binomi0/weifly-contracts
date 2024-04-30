@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.23;
 
 import "@account-abstraction/contracts/interfaces/IAccount.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 import "../AirlineUser.sol";
 
 contract BaseAccount is IAccount, AirlineUser {
@@ -14,12 +15,12 @@ contract BaseAccount is IAccount, AirlineUser {
     }
 
     function validateUserOp(
-        UserOperation memory userOp,
+        PackedUserOperation memory userOp,
         bytes32 userOpHash,
         uint256
     ) external view returns (uint256 validationData) {
         address recovered = ECDSA.recover(
-            ECDSA.toEthSignedMessageHash(userOpHash),
+            MessageHashUtils.toEthSignedMessageHash(userOpHash),
             userOp.signature
         );
 

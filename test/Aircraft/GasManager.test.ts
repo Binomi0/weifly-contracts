@@ -41,6 +41,7 @@ describe("[AircraftNFT] Handle combustible", async () => {
       airlineCoin,
       airlineRewardCoin,
       otherAccount,
+      thirdAccount,
       aircraft,
     } = await loadFixture(deployContracts);
 
@@ -97,11 +98,11 @@ describe("[AircraftNFT] Handle combustible", async () => {
       parseEther("1000000000"),
     );
 
-    // Admin burn combustible after flight ended
-    await airlineRewardCoin.approve(aircraft.address, parseEther("1"));
     await aircraft.burnGas(otherAccount.address, 0, parseEther("1"));
-    expect(await aircraft.gasBalance(otherAccount.address, 0)).to.equal(0);
 
+    expect(await aircraft.gasBalance(otherAccount.address, 0)).to.equal(0);
+    expect(await airlineRewardCoin.balanceOf(aircraft.address)).to.equal(0);
+    expect(await airlineRewardCoin.balanceOf(otherAccount.address)).to.equal(0);
     expect(await airlineRewardCoin.totalSupply()).to.equal(
       parseEther("999999999"),
     );

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.23;
 
 interface IRecoverable {
     function addAdmin(
@@ -8,12 +8,12 @@ interface IRecoverable {
         address _newAdmin
     ) external;
 
-    function resetOwner(
+    function setNewOwner(
         bytes32 _newOwnerSigned,
         bytes memory _signature,
         address _newOwner
     ) external;
 
     event AddAdmin(address newAdmin);
-    event ResetOwner(address newOwner);
+    event SetNewOwner(address newOwner);
 }

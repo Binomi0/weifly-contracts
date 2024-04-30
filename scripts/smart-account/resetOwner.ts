@@ -43,7 +43,7 @@ async function main() {
     nonce: await entryPoint.getNonce(sender, 0),
     // initCode,
     initCode: "0x",
-    callData: Account.interface.encodeFunctionData("resetOwner", [
+    callData: Account.interface.encodeFunctionData("setNewOwner", [
       arrayify(id(account3)),
       signature,
       account3,

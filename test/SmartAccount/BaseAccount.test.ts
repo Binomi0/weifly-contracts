@@ -1,61 +1,19 @@
 // Contracts are deployed using the first signer/account by default
 
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { AccountFactory, EntryPoint } from "../../typechain-types";
-import { arrayify, id, parseEther } from "ethers/lib/utils";
-import { BigNumber } from "ethers";
+import { parseEther } from "ethers/lib/utils";
+import { PackedUserOperationStruct } from "../../typechain-types/@account-abstraction/contracts/core/EntryPoint";
+import { fillUserOp, fillUserOpDefaults, packUserOp } from "../../utils/UserOp";
+import {
+  getBaseInitCode,
+  getSender,
+  getUserOp,
+  signUserOp,
+} from "../../utils/testutils";
 
 describe("[BaseAccount]", () => {
-  const getSender = async (entryPoint: EntryPoint, initCode: string) =>
-    entryPoint.getSenderAddress(initCode).catch((err) => {
-      if (err.data) {
-        return `0x${err.data.slice(-40)}`;
-      } else if (err.error) {
-        return `0x${err.error.data.data.slice(-40)}`;
-      }
-      throw new Error("Wrong data from getSenderAddress");
-    });
-
-  async function getSignedUserOp(
-    sender: string,
-    nonce: BigNumber,
-    initCode: string,
-    callData: string,
-    paymaster: string,
-    entryPoint: EntryPoint,
-    signer: SignerWithAddress,
-  ) {
-    const userOp = {
-      sender,
-      nonce,
-      initCode,
-      callData,
-      callGasLimit: 1_500_000,
-      verificationGasLimit: 1_500_000,
-      preVerificationGas: 400_000,
-      maxFeePerGas: ethers.utils.parseUnits("100", "gwei"),
-      maxPriorityFeePerGas: ethers.utils.parseUnits("50", "gwei"),
-      paymasterAndData: paymaster,
-      signature: "0x",
-    };
-
-    const userOpHash = await entryPoint.getUserOpHash(userOp);
-    userOp.signature = await signer.signMessage(
-      ethers.utils.arrayify(userOpHash),
-    );
-
-    return userOp;
-  }
-
-  const getInitCode = (accountFactory: AccountFactory, account: string) =>
-    accountFactory.address +
-    accountFactory.interface
-      .encodeFunctionData("createBaseAccount", [account])
-      .slice(2);
-
   async function deploy() {
     const [owner, otherAccount] = await ethers.getSigners();
 
@@ -88,21 +46,26 @@ describe("[BaseAccount]", () => {
 
     await entryPoint.depositTo(paymaster.address, { value: parseEther("100") });
 
-    const initCode = getInitCode(accountFactory, owner.address);
+    const initCode = getBaseInitCode(accountFactory, owner.address);
     const sender = (await getSender(entryPoint, initCode)) as string;
     const Account = await ethers.getContractFactory("BaseAccount");
 
-    const userOp = await getSignedUserOp(
+    const userOp = await getUserOp({
       sender,
-      await entryPoint.getNonce(sender, 0),
+      nonce: await entryPoint.getNonce(sender, 0),
       initCode,
-      Account.interface.encodeFunctionData("execute"),
-      paymaster.address,
-      entryPoint,
-      owner,
+      callData: Account.interface.encodeFunctionData("execute"),
+      callGasLimit: 1_500_000,
+      verificationGasLimit: 1_500_000,
+    });
+
+    const packedUserOp: PackedUserOperationStruct = packUserOp(
+      fillUserOp(userOp, paymaster.address),
     );
 
-    const tx = await entryPoint.handleOps([userOp], owner.address);
+    const signedUserOp = await signUserOp(entryPoint, packedUserOp, owner);
+
+    const tx = await entryPoint.handleOps([signedUserOp], owner.address);
     await tx.wait();
 
     const account = await ethers.getContractAt("BaseAccount", sender);

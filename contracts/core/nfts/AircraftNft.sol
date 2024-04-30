@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.23;
 
 import "@thirdweb-dev/contracts/base/ERC1155Drop.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
@@ -16,6 +16,9 @@ contract AircraftNFT is ERC1155Drop {
 
     // Admin required license
     mapping(uint256 => uint256) public requiredLicense;
+
+    event GasSent(address _address, uint256 _aircraftId, uint256 _amount);
+    event GasBurned(address _address, uint256 _aircraftId, uint256 _amount);
 
     constructor(
         address _defaultAdmin,
@@ -66,8 +69,11 @@ contract AircraftNFT is ERC1155Drop {
         );
 
         // Update the gas balance
-        gasBalance[_address][_aircraftId] = gasBalance[msg.sender][_aircraftId]
-            .add(_amount);
+        gasBalance[_address][_aircraftId] =
+            gasBalance[msg.sender][_aircraftId] +
+            _amount;
+
+        emit GasSent(_address, _amount, _aircraftId);
     }
 
     function burnGas(
@@ -76,15 +82,22 @@ contract AircraftNFT is ERC1155Drop {
         uint256 _amount
     ) public onlyOwner {
         require(
+            gasBalance[_address][_aircraftId] >= _amount,
+            "Amount exceeds balance"
+        );
+        require(
             airlineGasCoin.balanceOf(address(this)) >= _amount,
             "Insuffient gas balance"
         );
 
         // Subtract from internal accounting balance
-        gasBalance[_address][_aircraftId] = gasBalance[_address][_aircraftId]
-            .sub(_amount);
+        gasBalance[_address][_aircraftId] =
+            gasBalance[_address][_aircraftId] -
+            _amount;
         // Burn token from airlineGasCoin
         airlineGasCoin.burn(_amount);
+
+        emit GasBurned(_address, _aircraftId, _amount);
     }
 
     function setAirlineCoin(address _address) public onlyOwner {

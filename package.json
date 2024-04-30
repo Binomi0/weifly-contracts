@@ -3,6 +3,7 @@
   "scripts": {
     "start": "npx hardhat run scripts/deploy.ts --network remote",
     "test": "npx hardhat test",
+    "prettier": "prettier -w contracts scripts test",
     "build": "npx thirdweb@latest detect",
     "deploy": "npx thirdweb@latest deploy",
     "release": "npx thirdweb@latest release"

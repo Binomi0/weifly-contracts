@@ -1,6 +1,6 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { ethers } from "hardhat";
-import { AirlineCoin } from "../typechain-types";
+import { AirlineCoin } from "../../typechain-types";
 import { parseUnits } from "ethers/lib/utils";
 import { time } from "@nomicfoundation/hardhat-network-helpers";
 

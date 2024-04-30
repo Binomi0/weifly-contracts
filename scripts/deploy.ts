@@ -1,10 +1,10 @@
 import { ethers } from "hardhat";
-import deployAircraft from "./aircraft";
-import deployLicense from "./license";
-import deployTokens from "./tokens";
-import deployStaking from "./staking";
+import deployAircraft from "./nfts/aircraft";
+import deployLicense from "./nfts/license";
+import deployTokens from "./core/tokens";
+import deployStaking from "./core/staking";
 import { parseEther, parseUnits } from "ethers/lib/utils";
-import deployFlightController from "./flightController";
+import deployFlightController from "./core/flightController";
 
 const SMART_ACCOUNT = "0xcb3356cd40014fb43992325080330d96b2d7732f";
 

@@ -3,8 +3,8 @@ import {
   lazyMintAircraft,
   mintAircraft,
   setClaimConditionsAircraft,
-} from "../utils";
-import { AirlineCoin, LicenseNFT } from "../typechain-types";
+} from "../../utils";
+import { AirlineCoin, LicenseNFT } from "../../typechain-types";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { parseUnits } from "ethers/lib/utils";
 

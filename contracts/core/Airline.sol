@@ -2,8 +2,9 @@
 pragma solidity ^0.8.13;
 
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "../interfaces/IAirline.sol";
 
-contract Airline {
+contract Airline is IAirline {
     address public owner;
     bool public isOpen = true;
     mapping(address => uint8) public pilots;

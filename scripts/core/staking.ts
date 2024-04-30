@@ -5,7 +5,7 @@ import {
   AirlineCoin,
   AirlineRewardCoin,
   NativeTokenWrapper,
-} from "../typechain-types";
+} from "../../typechain-types";
 import { time } from "@nomicfoundation/hardhat-network-helpers";
 
 const handleError = (err: unknown) => {

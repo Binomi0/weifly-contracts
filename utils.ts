@@ -5,6 +5,8 @@ import { AircraftNFT, AirlineCoin, LicenseNFT } from "./typechain-types";
 import { aircrafts, licenses } from "./contants";
 import { parseUnits } from "ethers/lib/utils";
 
+const ZERO_ADDRESS =
+  "0x0000000000000000000000000000000000000000000000000000000000000000";
 export async function deployAirlineCoin(owner: string) {
   const AirlineCoin = await ethers.getContractFactory("AirlineCoin");
   const airlineCoin = await AirlineCoin.deploy(owner, "Airline Coin", "AIRL");
@@ -93,8 +95,7 @@ export async function setClaimConditionsLicense(
       quantityLimitPerWallet: 1,
       pricePerToken: parseUnits(licenses[tokenId].price.toString(), "ether"),
       supplyClaimed: 0,
-      merkleRoot:
-        "0x0000000000000000000000000000000000000000000000000000000000000000",
+      merkleRoot: ZERO_ADDRESS,
     },
     false,
   );
@@ -122,9 +123,7 @@ export async function mintLicense(
     airlineCoin.address,
     parseUnits(licenses[tokenId].price.toString(), "ether"),
     {
-      proof: [
-        "0x0000000000000000000000000000000000000000000000000000000000000000",
-      ],
+      proof: [ZERO_ADDRESS],
       quantityLimitPerWallet: cc.quantityLimitPerWallet,
       pricePerToken: cc.pricePerToken,
       currency: cc.currency,
@@ -174,8 +173,7 @@ export async function setClaimConditionsAircraft(
       quantityLimitPerWallet: 1,
       pricePerToken: parseUnits(aircrafts[tokenId].price.toString(), "ether"),
       supplyClaimed: 0,
-      merkleRoot:
-        "0x0000000000000000000000000000000000000000000000000000000000000000",
+      merkleRoot: ZERO_ADDRESS,
     },
     false,
   );
@@ -203,9 +201,7 @@ export async function mintAircraft(
     airlineCoin.address,
     parseUnits(aircrafts[tokenId].price.toString(), "ether"),
     {
-      proof: [
-        "0x0000000000000000000000000000000000000000000000000000000000000000",
-      ],
+      proof: [ZERO_ADDRESS],
       quantityLimitPerWallet: cc.quantityLimitPerWallet,
       pricePerToken: cc.pricePerToken,
       currency: cc.currency,

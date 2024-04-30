@@ -22,7 +22,11 @@ describe("AirlineUser", () => {
       const AirlineUser = await ethers.getContractFactory("AirlineUser");
       const airlineUser = await AirlineUser.deploy();
 
-      await airlineUser.connectToAirline(airline.address, address2, 1);
+      await airlineUser.connectToAirline(
+        await airline.getAddress(),
+        address2,
+        1,
+      );
 
       expect(await airline.pilots(address2)).to.equal(1);
     });
@@ -37,7 +41,11 @@ describe("AirlineUser", () => {
 
       await airline.isOpen();
 
-      await airlineUser.connectToAirline(airline.address, address2, 1);
+      await airlineUser.connectToAirline(
+        await airline.getAddress(),
+        address2,
+        1,
+      );
 
       expect(await airline.pilots(address2)).to.equal(1);
     });
@@ -53,12 +61,16 @@ describe("AirlineUser", () => {
       const AirlineUser = await ethers.getContractFactory("AirlineUser");
       const airlineUser = await AirlineUser.deploy();
 
-      await airlineUser.connectToAirline(airline1.address, address2, 1);
+      await airlineUser.connectToAirline(
+        await airline1.getAddress(),
+        address2,
+        1,
+      );
 
       expect(await airline1.pilots(address2)).to.equal(1);
 
       airlineUser
-        .connectToAirline(airline2.address, address2, 1)
+        .connectToAirline(await airline2.getAddress(), address2, 1)
         .catch((error) => {
           expect(error.message).to.contains(
             "Pilots only can be in one Airline at the same time",

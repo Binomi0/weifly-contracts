@@ -1,7 +1,6 @@
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { BigNumber } from "ethers";
 import {
   deployAircraftNFT,
   deployAirlineCoin,
@@ -13,8 +12,8 @@ import {
   setClaimConditionsAircraft,
   setClaimConditionsLicense,
 } from "../../utils";
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { parseUnits } from "ethers/lib/utils";
+import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
+import { parseUnits } from "ethers";
 import { AirlineCoin } from "../../typechain-types";
 
 describe("Aircraft Antonov AN225", async function () {
@@ -22,7 +21,7 @@ describe("Aircraft Antonov AN225", async function () {
     const [owner, otherAccount, thirdAccount] = await ethers.getSigners();
     const airlineCoin = await deployAirlineCoin(owner.address);
     const license = await deployLicenseNFT(owner.address);
-    const aircraft = await deployAircraftNFT(owner, license.address);
+    const aircraft = await deployAircraftNFT(owner, await license.getAddress());
 
     return {
       license,
@@ -36,7 +35,7 @@ describe("Aircraft Antonov AN225", async function () {
 
   async function setBalances(
     airlineCoin: AirlineCoin,
-    from: SignerWithAddress,
+    from: HardhatEthersSigner,
     to: string,
     amount: string,
   ) {
@@ -59,7 +58,7 @@ describe("Aircraft Antonov AN225", async function () {
 
     const cc = await aircraft.claimCondition(3);
 
-    expect(cc.maxClaimableSupply).to.be.equal(BigNumber.from("100"));
+    expect(cc.maxClaimableSupply).to.be.equal(BigInt("100"));
   });
 
   it("Should reject if no license 3 owner", async function () {
@@ -85,10 +84,10 @@ describe("Aircraft Antonov AN225", async function () {
     await setBalances(airlineCoin, owner, otherAccount.address, "320");
     await airlineCoin
       .connect(otherAccount)
-      .approve(license.address, parseUnits("320", "ether"));
+      .approve(await license.getAddress(), parseUnits("320", "ether"));
     await airlineCoin
       .connect(otherAccount)
-      .approve(aircraft.address, parseUnits("320", "ether"));
+      .approve(await aircraft.getAddress(), parseUnits("320", "ether"));
 
     const beforeBalance = await aircraft.balanceOf(otherAccount.address, 2);
     expect(beforeBalance).to.equal(0);

@@ -1,6 +1,6 @@
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
-import { parseEther } from "ethers/lib/utils";
+import { parseEther } from "ethers";
 import {
   deployAircraftNFT,
   deployAirlineCoin,
@@ -21,7 +21,7 @@ describe("[AircraftNFT] Handle combustible", async () => {
     const airlineCoin = await deployAirlineCoin(owner.address);
     const airlineRewardCoin = await deployAirlineRewardCoin(owner.address);
     const license = await deployLicenseNFT(owner.address);
-    const aircraft = await deployAircraftNFT(owner, license.address);
+    const aircraft = await deployAircraftNFT(owner, await license.getAddress());
 
     return {
       license,
@@ -52,23 +52,27 @@ describe("[AircraftNFT] Handle combustible", async () => {
     await airlineRewardCoin.approve(otherAccount.address, parseEther("1"));
     await airlineRewardCoin.transfer(otherAccount.address, parseEther("1"));
 
-    const prevBalance = await airlineRewardCoin.balanceOf(aircraft.address);
+    const prevBalance = await airlineRewardCoin.balanceOf(
+      await aircraft.getAddress(),
+    );
     expect(prevBalance).to.eq(0);
 
     // Send erc20 reward coins to aircraft erc1155 contract
     await airlineRewardCoin
       .connect(otherAccount)
-      .approve(aircraft.address, parseEther("1"));
+      .approve(await aircraft.getAddress(), parseEther("1"));
     await airlineRewardCoin
       .connect(otherAccount)
-      .transfer(aircraft.address, parseEther("1"));
+      .transfer(await aircraft.getAddress(), parseEther("1"));
 
-    const afterBalance = await airlineRewardCoin.balanceOf(aircraft.address);
+    const afterBalance = await airlineRewardCoin.balanceOf(
+      await aircraft.getAddress(),
+    );
     expect(afterBalance).to.eq(parseEther("1"));
 
     // Set coin address into aircraft contract by admin
-    await aircraft.setAirlineCoin(airlineCoin.address);
-    await aircraft.setAirlineGasCoin(airlineRewardCoin.address);
+    await aircraft.setAirlineCoin(await airlineCoin.getAddress());
+    await aircraft.setAirlineGasCoin(await airlineRewardCoin.getAddress());
 
     // Get first license
     await lazyMintLicense("1", 0, owner, license);
@@ -88,7 +92,9 @@ describe("[AircraftNFT] Handle combustible", async () => {
     );
 
     // Check than both aircraft supply and user balance matches
-    const balance = await airlineRewardCoin.balanceOf(aircraft.address);
+    const balance = await airlineRewardCoin.balanceOf(
+      await aircraft.getAddress(),
+    );
     expect(balance).to.equal(parseEther("1"));
     expect(await aircraft.gasBalance(otherAccount.address, 0)).to.equal(
       parseEther("1"),
@@ -98,7 +104,10 @@ describe("[AircraftNFT] Handle combustible", async () => {
     );
 
     // Admin burn combustible after flight ended
-    await airlineRewardCoin.approve(aircraft.address, parseEther("1"));
+    await airlineRewardCoin.approve(
+      await aircraft.getAddress(),
+      parseEther("1"),
+    );
     await aircraft.burnGas(otherAccount.address, 0, parseEther("1"));
     expect(await aircraft.gasBalance(otherAccount.address, 0)).to.equal(0);
 

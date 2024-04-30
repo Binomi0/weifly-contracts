@@ -1,6 +1,6 @@
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
-import { getAddress, parseEther } from "ethers/lib/utils";
+import { getAddress } from "ethers";
 import { ethers } from "hardhat";
 
 describe("[Account Factory]", () => {
@@ -12,7 +12,6 @@ describe("[Account Factory]", () => {
     const entryPoint = await EntryPoint.deploy();
     const AccountFactory = await ethers.getContractFactory("AccountFactory");
     const accountFactory = await AccountFactory.deploy();
-    await accountFactory.deployed();
 
     return { accountFactory, owner, otherAccount, entryPoint };
   }
@@ -39,7 +38,9 @@ describe("[Account Factory]", () => {
         returnedAddress,
       );
       expect(getAddress(returnedAddress)).to.equal(otherAccount.address);
-      expect(getAddress(account.address)).to.equal(otherAccount.address);
+      expect(getAddress(await account.getAddress())).to.equal(
+        otherAccount.address,
+      );
     });
 
     it("Should deploy the same new Smart Account Contract", async () => {
@@ -60,7 +61,9 @@ describe("[Account Factory]", () => {
         returnedAddress,
       );
       expect(getAddress(returnedAddress)).to.equal(otherAccount.address);
-      expect(getAddress(account.address)).to.equal(otherAccount.address);
+      expect(getAddress(await account.getAddress())).to.equal(
+        otherAccount.address,
+      );
 
       const secondAddress = await create();
 
@@ -71,7 +74,6 @@ describe("[Account Factory]", () => {
   describe("Recoverable Account", () => {
     it("Should deploy a new Recoverable Smart Account Contract", async () => {
       const { accountFactory, otherAccount, owner } = await loadFixture(deploy);
-      await accountFactory.deployed();
 
       const receipt = await accountFactory.createRecoverableAccount(
         otherAccount.address,
@@ -84,12 +86,13 @@ describe("[Account Factory]", () => {
         returnedAddress,
       );
       expect(getAddress(returnedAddress)).to.equal(otherAccount.address);
-      expect(getAddress(account.address)).to.equal(otherAccount.address);
+      expect(getAddress(await account.getAddress())).to.equal(
+        otherAccount.address,
+      );
     });
 
     it("Should deploy the same new Recoverable Smart Account Contract", async () => {
       const { accountFactory, otherAccount, owner } = await loadFixture(deploy);
-      await accountFactory.deployed();
 
       const create = async () => {
         const receipt = await accountFactory.createRecoverableAccount(
@@ -106,7 +109,9 @@ describe("[Account Factory]", () => {
         returnedAddress,
       );
       expect(getAddress(returnedAddress)).to.equal(otherAccount.address);
-      expect(getAddress(account.address)).to.equal(otherAccount.address);
+      expect(getAddress(await account.getAddress())).to.equal(
+        otherAccount.address,
+      );
 
       const secondAddress = await create();
       expect(secondAddress).to.equal(returnedAddress);

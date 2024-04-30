@@ -1,6 +1,6 @@
 import { ethers } from "hardhat";
-import { parseUnits } from "ethers/lib/utils";
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { parseUnits } from "ethers";
+import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import {
   AirlineCoin,
   AirlineRewardCoin,
@@ -14,7 +14,7 @@ const handleError = (err: unknown) => {
 };
 
 const deployStaking = async (
-  accounts: SignerWithAddress[],
+  accounts: HardhatEthersSigner[],
   airLine: AirlineCoin,
   airLineReward: AirlineRewardCoin,
   nativeTokenWrapper: NativeTokenWrapper,

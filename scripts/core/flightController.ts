@@ -1,8 +1,10 @@
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import { ethers } from "hardhat";
 import { AirlineCoin } from "../../typechain-types";
-import { parseUnits } from "ethers/lib/utils";
+import { parseUnits } from "ethers";
 import { time } from "@nomicfoundation/hardhat-network-helpers";
+import { ContractRunner } from "ethers";
+import { ZERO_ADDRESS } from "../../utils";
 
 const handleError = (err: unknown) => {
   const { error } = err as { error: Error };
@@ -10,22 +12,23 @@ const handleError = (err: unknown) => {
 };
 
 const deployFlightController = async (
-  accounts: SignerWithAddress[],
+  accounts: HardhatEthersSigner[],
   aircraftNFTAddress: string,
   airlineCoin: AirlineCoin,
+  ownerAddr: string,
+  airlineCoinAddr: string,
 ) => {
   console.group("deployFlightController");
   console.log("----- DEPLOYING Flight Controller -----");
   const [owner, otherAccount] = accounts;
   const FlightController = await ethers.getContractFactory("FlightController");
   const flightController = await FlightController.deploy(
-    owner.address,
+    ownerAddr,
     aircraftNFTAddress,
-    airlineCoin.address,
+    airlineCoinAddr,
   );
-  await flightController.deployed();
   console.log("----- Flight Controller deployed -----");
-  console.log("FlightController address =>", flightController.address);
+  console.log("FlightController address =>", flightController.getAddress());
 
   console.log("Starting flight...");
   await flightController.connect(otherAccount).startFlight(123, 100, 0, 1);
@@ -35,8 +38,8 @@ const deployFlightController = async (
 
   const flight = await flightController
     .connect(otherAccount)
-    .flightDetails(otherAccount.address);
-  if (!flight.startTime.isZero()) {
+    .flightDetails(otherAccount);
+  if (flight.startTime === BigInt(0)) {
     // try {
     //   console.log('Try to duplicate flight')
     //   await flightController.connect(otherAccount).startFlight(123, 100, 0, 1)
@@ -54,18 +57,19 @@ const deployFlightController = async (
       // Get the contract instance
       const flightControllerContract = await ethers.getContractAt(
         "FlightController",
-        flightController.address,
+        await flightController.getAddress(),
       );
 
       // Get the emitted event using the event filter
       const eventFilter = flightControllerContract.filters.FlightCompleted(
-        null,
-        null,
-        null,
+        ZERO_ADDRESS,
+        0,
+        0,
       );
       const [event] = await flightControllerContract.queryFilter(
         eventFilter,
-        txReceipt.blockNumber,
+        txReceipt.blockNumber || 0,
+        txReceipt.blockNumber || 10,
       );
 
       // Access values from the emitted event
@@ -73,7 +77,7 @@ const deployFlightController = async (
       console.log("pilot =>", pilot);
       console.log("flightId =>", flightId.toString());
 
-      if (rewards.isZero()) return;
+      if (BigInt(rewards) === BigInt(0)) return;
       console.log("Ended OK");
       console.log("rewards =>", rewards.toString());
       console.log("Minting...");

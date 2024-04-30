@@ -1,6 +1,6 @@
 import { ethers } from "hardhat";
 import { expect } from "chai";
-import { parseEther, parseUnits } from "ethers/lib/utils";
+import { parseEther, parseUnits } from "ethers";
 import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 
 describe("StakingAirline", async () => {
@@ -35,9 +35,9 @@ describe("StakingAirline", async () => {
       owner.address,
       1,
       100,
-      airlineCoin.address,
-      airlineRewardCoin.address,
-      nativeTokenWrapper.address,
+      await airlineCoin.getAddress(),
+      await airlineRewardCoin.getAddress(),
+      await nativeTokenWrapper.getAddress(),
     );
 
     return {
@@ -63,7 +63,7 @@ describe("StakingAirline", async () => {
       await loadFixture(deployStakingAirline);
 
     await airlineRewardCoin.approve(
-      stakingAirline.address,
+      await stakingAirline.getAddress(),
       parseEther(ONE_THOUSAND_MILLION.toString()),
     );
 
@@ -89,7 +89,7 @@ describe("StakingAirline", async () => {
       await loadFixture(deployStakingAirline);
 
     await airlineRewardCoin.approve(
-      stakingAirline.address,
+      await stakingAirline.getAddress(),
       parseEther(ONE_THOUSAND_MILLION.toString()),
     );
 
@@ -109,7 +109,7 @@ describe("StakingAirline", async () => {
     await airlineCoin.transfer(otherAccount.address, parseEther("1"));
     await airlineCoin
       .connect(otherAccount)
-      .approve(stakingAirline.address, parseEther("1"));
+      .approve(await stakingAirline.getAddress(), parseEther("1"));
     await stakingAirline.connect(otherAccount).stake(parseEther("1"));
 
     const stakeInfo = await stakingAirline.getStakeInfo(otherAccount.address);
@@ -124,7 +124,7 @@ describe("StakingAirline", async () => {
       await loadFixture(deployStakingAirline);
 
     await airlineRewardCoin.approve(
-      stakingAirline.address,
+      await stakingAirline.getAddress(),
       parseEther(ONE_THOUSAND_MILLION.toString()),
     );
 
@@ -144,7 +144,7 @@ describe("StakingAirline", async () => {
     await airlineCoin.transfer(otherAccount.address, parseEther("10000"));
     await airlineCoin
       .connect(otherAccount)
-      .approve(stakingAirline.address, parseEther("10000"));
+      .approve(await stakingAirline.getAddress(), parseEther("10000"));
     await stakingAirline.connect(otherAccount).stake(parseEther("10000"));
 
     const stakeInfo = await stakingAirline.getStakeInfo(otherAccount.address);
@@ -168,7 +168,10 @@ describe("StakingAirline", async () => {
       const { owner, stakingAirline, airlineCoin } =
         await loadFixture(deployStakingAirline);
 
-      await airlineCoin.approve(stakingAirline.address, parseEther("1"));
+      await airlineCoin.approve(
+        await stakingAirline.getAddress(),
+        parseEther("1"),
+      );
       await stakingAirline.stake(parseEther("1"));
       const stakeInfo = await stakingAirline.getStakeInfo(owner.address);
       expect(stakeInfo._tokensStaked).to.equal(parseEther("1"));
@@ -177,7 +180,10 @@ describe("StakingAirline", async () => {
       const { owner, stakingAirline, airlineCoin } =
         await loadFixture(deployStakingAirline);
 
-      await airlineCoin.approve(stakingAirline.address, parseEther("1"));
+      await airlineCoin.approve(
+        await stakingAirline.getAddress(),
+        parseEther("1"),
+      );
       await stakingAirline.stake(parseEther("1"));
       await time.increase(10000);
 
@@ -190,7 +196,10 @@ describe("StakingAirline", async () => {
       const { owner, stakingAirline, airlineCoin } =
         await loadFixture(deployStakingAirline);
 
-      await airlineCoin.approve(stakingAirline.address, parseEther("1"));
+      await airlineCoin.approve(
+        await stakingAirline.getAddress(),
+        parseEther("1"),
+      );
       await stakingAirline.stake(parseEther("1"));
       await time.increase(70000);
 
@@ -211,7 +220,7 @@ describe("StakingAirline", async () => {
 
       await airlineCoin
         .connect(otherAccount)
-        .approve(stakingAirline.address, parseEther("1"));
+        .approve(await stakingAirline.getAddress(), parseEther("1"));
 
       await stakingAirline.connect(otherAccount).stake(parseEther("1"));
       expect(await airlineCoin.balanceOf(otherAccount.address)).to.equal(0);
@@ -229,7 +238,7 @@ describe("StakingAirline", async () => {
         await loadFixture(deployStakingAirline);
 
       await airlineRewardCoin.approve(
-        stakingAirline.address,
+        await stakingAirline.getAddress(),
         parseEther("1000000"),
       );
       await stakingAirline.depositRewardTokens(parseEther("1000000"));
@@ -250,7 +259,7 @@ describe("StakingAirline", async () => {
 
       await airlineCoin
         .connect(otherAccount)
-        .approve(stakingAirline.address, parseEther("1"));
+        .approve(await stakingAirline.getAddress(), parseEther("1"));
       await stakingAirline.connect(otherAccount).stake(parseEther("1"));
 
       await time.increase(10000);
@@ -262,9 +271,7 @@ describe("StakingAirline", async () => {
       await stakingAirline.connect(otherAccount).claimRewards();
 
       const balance = await airlineRewardCoin.balanceOf(otherAccount.address);
-      expect(balance).to.equal(
-        parseEther("100").add(parseUnits("10", "finney")),
-      );
+      expect(balance).to.equal(parseEther("100") + parseUnits("10", "finney"));
     });
   });
 });

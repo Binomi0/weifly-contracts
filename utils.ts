@@ -1,16 +1,17 @@
-import { time } from "@nomicfoundation/hardhat-network-helpers";
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { ethers } from "hardhat";
+import { encodeBytes32String, getBytes, hexlify, parseUnits } from "ethers";
+import { defaultAbiCoder } from "@ethersproject/abi";
+import { time } from "@nomicfoundation/hardhat-network-helpers";
+import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import { AircraftNFT, AirlineCoin, LicenseNFT } from "./typechain-types";
 import { aircrafts, licenses } from "./contants";
-import { parseUnits } from "ethers/lib/utils";
 
-const ZERO_ADDRESS =
+export const ZERO_ADDRESS =
   "0x0000000000000000000000000000000000000000000000000000000000000000";
+
 export async function deployAirlineCoin(owner: string) {
   const AirlineCoin = await ethers.getContractFactory("AirlineCoin");
   const airlineCoin = await AirlineCoin.deploy(owner, "Airline Coin", "AIRL");
-  await airlineCoin.deployed();
 
   return airlineCoin;
 }
@@ -23,7 +24,6 @@ export async function deployAirlineRewardCoin(owner: string) {
     "Airline Reward Coin",
     "AIRG",
   );
-  await airlineRewardCoin.deployed();
 
   return airlineRewardCoin;
 }
@@ -39,7 +39,6 @@ export async function deployFlightController(
     aircraftNFTAddress,
     airlineCoinAddress,
   );
-  await flightController.deployed();
 
   return flightController;
 }
@@ -54,14 +53,13 @@ export async function deployLicenseNFT(owner: string) {
     0,
     owner,
   );
-  await license.deployed();
   // console.log("LicenseNFT deployed at address:", license.address);
 
   return license;
 }
 
 export async function deployAircraftNFT(
-  owner: SignerWithAddress,
+  owner: HardhatEthersSigner,
   licenseAddress: string,
 ) {
   const Aircraft = await ethers.getContractFactory("AircraftNFT");
@@ -74,7 +72,6 @@ export async function deployAircraftNFT(
     owner.address,
     licenseAddress,
   );
-  await aircraft.deployed();
   // console.log("AircraftNFT deployed at address:", aircraft.address);
 
   return aircraft;
@@ -88,7 +85,7 @@ export async function setClaimConditionsLicense(
   await license.setClaimConditions(
     tokenId,
     {
-      currency: airlineCoin.address,
+      currency: await airlineCoin.getAddress(),
       maxClaimableSupply: 100,
       metadata: JSON.stringify(licenses[tokenId]),
       startTimestamp: await time.latest(),
@@ -103,7 +100,7 @@ export async function setClaimConditionsLicense(
 
 export async function mintLicense(
   license: LicenseNFT,
-  otherAccount: SignerWithAddress,
+  otherAccount: HardhatEthersSigner,
   tokenId: number,
   airlineCoin: AirlineCoin,
   requiredLicenseId: number,
@@ -111,16 +108,13 @@ export async function mintLicense(
 ) {
   // console.log("Minting License Token id =>", tokenId);
   const cc = await license.claimCondition(tokenId);
-  const encodedData = ethers.utils.defaultAbiCoder.encode(
-    ["uint256"],
-    [requiredLicenseId],
-  );
+  const encodedData = defaultAbiCoder.encode(["uint256"], [requiredLicenseId]);
 
   return await license.connect(otherAccount).claim(
     otherAccount.address,
     tokenId,
     amount,
-    airlineCoin.address,
+    await airlineCoin.getAddress(),
     parseUnits(licenses[tokenId].price.toString(), "ether"),
     {
       proof: [ZERO_ADDRESS],
@@ -128,28 +122,27 @@ export async function mintLicense(
       pricePerToken: cc.pricePerToken,
       currency: cc.currency,
     },
-    ethers.utils.hexlify(encodedData),
+    hexlify(encodedData),
   );
 }
 
 export async function lazyMintLicense(
   _amount: string,
   tokenId: number,
-  owner: SignerWithAddress,
+  owner: HardhatEthersSigner,
   license: LicenseNFT,
 ) {
-  const amount = ethers.utils.parseUnits(_amount, "wei"); // Minting 1 token
+  const amount = parseUnits(_amount, "wei"); // Minting 1 token
   const baseURIForTokens = "http://localhost:3000/api/metadata/license/";
   const encryptedURI = await owner.signMessage(baseURIForTokens);
-  const provenanceHash = ethers.utils.formatBytes32String(""); // Convert to bytes32
-  const _data = ethers.utils.defaultAbiCoder.encode(
+  const provenanceHash = encodeBytes32String(""); // Convert to bytes32
+  const _data = defaultAbiCoder.encode(
     ["bytes", "bytes32"],
-    [ethers.utils.arrayify(encryptedURI), provenanceHash],
+    [getBytes(encryptedURI), provenanceHash],
   );
 
   try {
     await license.lazyMint(amount, baseURIForTokens, _data);
-    await license.deployed();
 
     return true;
   } catch (error) {
@@ -166,7 +159,7 @@ export async function setClaimConditionsAircraft(
   await aircraft.setClaimConditions(
     tokenId,
     {
-      currency: airlineCoin.address,
+      currency: await airlineCoin.getAddress(),
       maxClaimableSupply: 100,
       metadata: JSON.stringify(aircrafts[tokenId]),
       startTimestamp: await time.latest(),
@@ -181,7 +174,7 @@ export async function setClaimConditionsAircraft(
 
 export async function mintAircraft(
   aircraft: AircraftNFT,
-  otherAccount: SignerWithAddress,
+  otherAccount: HardhatEthersSigner,
   tokenId: number,
   airlineCoin: AirlineCoin,
   amount = 1,
@@ -189,16 +182,13 @@ export async function mintAircraft(
   // console.log("Minting Aircraft Token id =>", tokenId);
 
   const cc = await aircraft.claimCondition(tokenId);
-  const encodedData = ethers.utils.defaultAbiCoder.encode(
-    ["uint256"],
-    [tokenId],
-  );
+  const encodedData = defaultAbiCoder.encode(["uint256"], [tokenId]);
 
   return await aircraft.connect(otherAccount).claim(
     otherAccount.address,
     tokenId,
     amount,
-    airlineCoin.address,
+    await airlineCoin.getAddress(),
     parseUnits(aircrafts[tokenId].price.toString(), "ether"),
     {
       proof: [ZERO_ADDRESS],
@@ -206,28 +196,27 @@ export async function mintAircraft(
       pricePerToken: cc.pricePerToken,
       currency: cc.currency,
     },
-    ethers.utils.hexlify(encodedData),
+    hexlify(encodedData),
   );
 }
 
 export async function lazyMintAircraft(
   _amount: string,
   tokenId: number,
-  owner: SignerWithAddress,
+  owner: HardhatEthersSigner,
   aircraft: LicenseNFT,
 ) {
-  const amount = ethers.utils.parseUnits(_amount, "wei"); // Minting 1 token
+  const amount = parseUnits(_amount, "wei"); // Minting 1 token
   const baseURIForTokens = "http://localhost:3000/api/metadata/aircraft/"; // Replace with your actual base URI
   const encryptedURI = await owner.signMessage(baseURIForTokens);
-  const provenanceHash = ethers.utils.formatBytes32String(""); // Convert to bytes32
-  const _data = ethers.utils.defaultAbiCoder.encode(
+  const provenanceHash = encodeBytes32String(""); // Convert to bytes32
+  const _data = defaultAbiCoder.encode(
     ["bytes", "bytes32"],
-    [ethers.utils.arrayify(encryptedURI), provenanceHash],
+    [getBytes(encryptedURI), provenanceHash],
   );
 
   try {
     await aircraft.lazyMint(amount, baseURIForTokens, _data);
-    await aircraft.deployed();
 
     return true;
   } catch (error) {

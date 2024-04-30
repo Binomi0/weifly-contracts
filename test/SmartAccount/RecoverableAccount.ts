@@ -1,11 +1,11 @@
 // Contracts are deployed using the first signer/account by default
 
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { AccountFactory, EntryPoint } from "../../typechain-types";
-import { arrayify, id, parseEther } from "ethers/lib/utils";
+import { arrayify, id, parseEther } from "ethers";
 import { BigNumber } from "ethers";
 
 describe("[RecoverableAccount]", () => {
@@ -25,7 +25,7 @@ describe("[RecoverableAccount]", () => {
     callData: string,
     paymaster: string,
     entryPoint: EntryPoint,
-    signer: SignerWithAddress,
+    signer: HardhatEthersSigner,
   ) {
     const userOp = {
       sender,

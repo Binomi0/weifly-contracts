@@ -1,6 +1,6 @@
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
-import { arrayify, id, keccak256 } from "ethers/lib/utils";
+import { getBytes, id, keccak256 } from "ethers";
 import { ethers } from "hardhat";
 
 describe("Virtual Airline", () => {
@@ -30,8 +30,8 @@ describe("Virtual Airline", () => {
       it("Should be able to close airline", async () => {
         const { airline, signer1, address1 } = await loadFixture(deploy);
 
-        const signature = signer1.signMessage(arrayify(id(address1)));
-        const senderHash = arrayify(id(address1));
+        const signature = await signer1.signMessage(getBytes(id(address1)));
+        const senderHash = getBytes(id(address1));
         await airline.closeAirline(signature, senderHash);
 
         expect(await airline.isOpen()).to.equal(false);
@@ -39,8 +39,8 @@ describe("Virtual Airline", () => {
       it("Should Not be able to close airline if closed", async () => {
         const { airline, signer1, address1 } = await loadFixture(deploy);
 
-        const signature = signer1.signMessage(arrayify(id(address1)));
-        const senderHash = arrayify(id(address1));
+        const signature = await signer1.signMessage(getBytes(id(address1)));
+        const senderHash = getBytes(id(address1));
         await airline.closeAirline(signature, senderHash);
         airline.closeAirline(signature, senderHash).catch((error) => {
           expect(error.message).to.contains("Airline is already closed");
@@ -50,8 +50,8 @@ describe("Virtual Airline", () => {
       it("Should be able to open airline", async () => {
         const { airline, signer1, address1 } = await loadFixture(deploy);
 
-        const signature = signer1.signMessage(arrayify(id(address1)));
-        const senderHash = arrayify(id(address1));
+        const signature = await signer1.signMessage(getBytes(id(address1)));
+        const senderHash = getBytes(id(address1));
         await airline.closeAirline(signature, senderHash);
         await airline.openAirline(signature, senderHash);
 
@@ -61,8 +61,8 @@ describe("Virtual Airline", () => {
       it("Should Not be able to open airline if opened", async () => {
         const { airline, signer1, address1 } = await loadFixture(deploy);
 
-        const signature = signer1.signMessage(arrayify(id(address1)));
-        const senderHash = arrayify(id(address1));
+        const signature = await signer1.signMessage(getBytes(id(address1)));
+        const senderHash = getBytes(id(address1));
         airline.openAirline(signature, senderHash).catch((error) => {
           expect(error.message).to.contains("Airline is already open");
         });

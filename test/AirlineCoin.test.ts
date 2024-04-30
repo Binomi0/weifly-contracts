@@ -2,6 +2,7 @@ import { time, loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
 import { expect } from "chai";
 import { ethers } from "hardhat";
+import { parseEther } from "ethers";
 
 describe("AirlineCoin", function () {
   async function deployAirlineCoin() {
@@ -30,7 +31,7 @@ describe("AirlineCoin", function () {
     const { airlineCoin, owner } = await loadFixture(deployAirlineCoin);
 
     expect(await airlineCoin.balanceOf(owner.address)).to.equal(
-      ethers.utils.parseEther("1000000"),
+      parseEther("1000000"),
     );
   });
 });

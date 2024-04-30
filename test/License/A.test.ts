@@ -1,7 +1,6 @@
 import { time, loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { BigNumber } from "ethers";
 import {
   deployAirlineCoin,
   deployLicenseNFT,
@@ -9,8 +8,8 @@ import {
   mintLicense,
   setClaimConditionsLicense,
 } from "../../utils";
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { parseUnits } from "ethers/lib/utils";
+import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
+import { parseUnits } from "ethers";
 import { AirlineCoin } from "../../typechain-types";
 
 describe("License A NFT", async function () {
@@ -24,7 +23,7 @@ describe("License A NFT", async function () {
 
   async function setBalances(
     airlineCoin: AirlineCoin,
-    from: SignerWithAddress,
+    from: HardhatEthersSigner,
     to: string,
     amount: string,
   ) {
@@ -45,7 +44,7 @@ describe("License A NFT", async function () {
 
     const cc = await license.claimCondition(3);
 
-    expect(cc.maxClaimableSupply).to.be.equal(BigNumber.from("100"));
+    expect(cc.maxClaimableSupply).to.be.equal(BigInt("100"));
   });
 
   it("Should set the right URI", async () => {
@@ -54,7 +53,7 @@ describe("License A NFT", async function () {
     await setBalances(airlineCoin, owner, otherAccount.address, "160");
     await airlineCoin
       .connect(otherAccount)
-      .approve(license.address, parseUnits("160", "ether"));
+      .approve(await license.getAddress(), parseUnits("160", "ether"));
 
     await lazyMintLicense("4", 0, owner, license);
     await setClaimConditionsLicense(license, 0, airlineCoin);
@@ -87,7 +86,9 @@ describe("License A NFT", async function () {
     const { license, owner, otherAccount, airlineCoin } =
       await loadFixture(deployContracts);
     await setBalances(airlineCoin, owner, otherAccount.address, "300");
-    await airlineCoin.connect(otherAccount).approve(license.address, 300);
+    await airlineCoin
+      .connect(otherAccount)
+      .approve(await license.getAddress(), 300);
 
     await lazyMintLicense("4", 3, owner, license);
     await setClaimConditionsLicense(license, 3, airlineCoin);
@@ -106,7 +107,7 @@ describe("License A NFT", async function () {
     await setBalances(airlineCoin, owner, otherAccount.address, "160");
     await airlineCoin
       .connect(otherAccount)
-      .approve(license.address, parseUnits("160", "ether"));
+      .approve(await license.getAddress(), parseUnits("160", "ether"));
 
     await lazyMintLicense("4", 0, owner, license);
     await setClaimConditionsLicense(license, 0, airlineCoin);

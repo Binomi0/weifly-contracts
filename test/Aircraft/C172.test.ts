@@ -1,7 +1,6 @@
 import { time, loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { BigNumber } from "ethers";
 import {
   deployAircraftNFT,
   deployAirlineCoin,
@@ -19,7 +18,7 @@ describe("Aircraft Cessna 172", async function () {
     const [owner, otherAccount, thirdAccount] = await ethers.getSigners();
     const airlineCoin = await deployAirlineCoin(owner.address);
     const license = await deployLicenseNFT(owner.address);
-    const aircraft = await deployAircraftNFT(owner, license.address);
+    const aircraft = await deployAircraftNFT(owner, await license.getAddress());
 
     return {
       license,
@@ -46,7 +45,7 @@ describe("Aircraft Cessna 172", async function () {
 
     const cc = await aircraft.claimCondition(0);
 
-    expect(cc.maxClaimableSupply).to.be.equal(BigNumber.from("100"));
+    expect(cc.maxClaimableSupply).to.be.equal(BigInt("100"));
   });
 
   it("Should fail if tries to claim more than 1 aircraft", async function () {

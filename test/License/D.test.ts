@@ -1,7 +1,6 @@
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { BigNumber } from "ethers";
 import {
   deployAirlineCoin,
   deployLicenseNFT,
@@ -29,8 +28,8 @@ describe("License D NFT", async function () {
     await setClaimConditionsLicense(license, 0, airlineCoin);
 
     const cc = await license.claimCondition(0);
-    expect(cc.maxClaimableSupply).to.be.equal(BigNumber.from("100"));
-    expect(cc.pricePerToken.toNumber()).to.equal(0);
+    expect(cc.maxClaimableSupply).to.be.equal(BigInt("100"));
+    expect(cc.pricePerToken).to.equal(0);
   });
 
   it("Should set the right URI", async () => {

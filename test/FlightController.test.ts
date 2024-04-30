@@ -12,9 +12,9 @@ import {
   setClaimConditionsAircraft,
   setClaimConditionsLicense,
 } from "../utils";
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import { AircraftNFT, AirlineCoin, LicenseNFT } from "../typechain-types";
-import { parseUnits } from "ethers/lib/utils";
+import { parseUnits } from "ethers";
 import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 
 describe("FlightController", () => {
@@ -22,11 +22,11 @@ describe("FlightController", () => {
     const [owner, otherAccount, thirdAccount] = await ethers.getSigners();
     const airlineCoin = await deployAirlineCoin(owner.address);
     const license = await deployLicenseNFT(owner.address);
-    const aircraft = await deployAircraftNFT(owner, license.address);
+    const aircraft = await deployAircraftNFT(owner, await license.getAddress());
     const flightController = await deployFlightController(
-      owner.address,
-      aircraft.address,
-      airlineCoin.address,
+      await owner.getAddress(),
+      await aircraft.getAddress(),
+      await airlineCoin.getAddress(),
     );
 
     return {
@@ -41,10 +41,10 @@ describe("FlightController", () => {
   }
 
   async function mintNewLicense(
-    owner: SignerWithAddress,
+    owner: HardhatEthersSigner,
     license: LicenseNFT,
     airlineCoin: AirlineCoin,
-    otherAccount: SignerWithAddress,
+    otherAccount: HardhatEthersSigner,
     aircraft: AircraftNFT,
   ) {
     await lazyMintLicense("1", 0, owner, license);
@@ -58,8 +58,8 @@ describe("FlightController", () => {
 
   async function setBalances(
     airlineCoin: AirlineCoin,
-    otherAccount: SignerWithAddress,
-    thirdAccount: SignerWithAddress,
+    otherAccount: HardhatEthersSigner,
+    thirdAccount: HardhatEthersSigner,
   ) {
     await airlineCoin.approve(otherAccount.address, parseUnits("300", "ether"));
     await airlineCoin.transfer(
@@ -84,7 +84,9 @@ describe("FlightController", () => {
     const { flightController, airlineCoin } =
       await loadFixture(deployContracts);
 
-    expect(await flightController.airlineCoin()).to.equal(airlineCoin.address);
+    expect(await flightController.airlineCoin()).to.equal(
+      await airlineCoin.getAddress(),
+    );
   });
 
   it("Should have set flight details after start", async () => {
@@ -287,10 +289,10 @@ describe("FlightController", () => {
 
     await airlineCoin
       .connect(otherAccount)
-      .approve(license.address, parseUnits("300", "ether"));
+      .approve(await license.getAddress(), parseUnits("300", "ether"));
     await airlineCoin
       .connect(thirdAccount)
-      .approve(license.address, parseUnits("300", "ether"));
+      .approve(await license.getAddress(), parseUnits("300", "ether"));
 
     await lazyMintLicense("1", 0, owner, license);
     await setClaimConditionsLicense(license, 0, airlineCoin);

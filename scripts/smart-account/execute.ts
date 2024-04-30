@@ -1,5 +1,5 @@
 import { ethers } from "hardhat";
-import { parseEther } from "ethers/lib/utils";
+import { parseEther } from "ethers";
 import { AF_ADDR, EP_ADDR, PM_ADDR } from ".";
 
 async function main() {

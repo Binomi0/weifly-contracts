@@ -1,14 +1,41 @@
 // Contracts are deployed using the first signer/account by default
 
-import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
+import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { AccountFactory, EntryPoint } from "../../typechain-types";
-import { arrayify, id, parseEther } from "ethers/lib/utils";
-import { BigNumber } from "ethers";
+import {
+  AbiCoder,
+  BigNumberish,
+  getBytes,
+  hexlify,
+  id,
+  parseEther,
+  parseUnits,
+} from "ethers";
+import { PackedUserOperationStruct } from "../../typechain-types/@account-abstraction/contracts/core/EntryPoint";
+import { defaultAbiCoder } from "@ethersproject/abi";
 
-describe("[BaseAccount]", () => {
+export function packAccountGasLimits(
+  verificationGasLimit: BigNumberish,
+  callGasLimit: BigNumberish,
+): string {
+  function hexZeroPad(hexString: string, length: number) {
+    const cleanHexString = hexString.replace(/^0x/i, "");
+    const paddingLength = Math.max(length - cleanHexString.length, 0);
+    console.log({ paddingLength });
+    console.log({ cleanHexString });
+    return "0x" + "0".repeat(paddingLength) + cleanHexString;
+  }
+
+  const a = id(verificationGasLimit.toString(16));
+  const b = id(verificationGasLimit.toString(16));
+  console.log({ a, b });
+  return `${hexZeroPad(verificationGasLimit.toString(16), 16)}${hexZeroPad(callGasLimit.toString(16), 16).slice(2)}`;
+}
+
+describe.only("[BaseAccount]", () => {
   const getSender = async (entryPoint: EntryPoint, initCode: string) =>
     entryPoint.getSenderAddress(initCode).catch((err) => {
       if (err.data) {
@@ -21,37 +48,41 @@ describe("[BaseAccount]", () => {
 
   async function getSignedUserOp(
     sender: string,
-    nonce: BigNumber,
+    nonce: bigint,
     initCode: string,
     callData: string,
     paymaster: string,
     entryPoint: EntryPoint,
-    signer: SignerWithAddress,
+    signer: HardhatEthersSigner,
   ) {
-    const userOp = {
+    const accountGasLimits = packAccountGasLimits(1_500_000, 1_500_000);
+    console.log({ accountGasLimits });
+    const gasFees = packAccountGasLimits(200_000, 200_000);
+    console.log({ gasFees });
+    const userOp: PackedUserOperationStruct = {
       sender,
       nonce,
       initCode,
       callData,
-      callGasLimit: 1_500_000,
-      verificationGasLimit: 1_500_000,
-      preVerificationGas: 400_000,
-      maxFeePerGas: ethers.utils.parseUnits("100", "gwei"),
-      maxPriorityFeePerGas: ethers.utils.parseUnits("50", "gwei"),
+      accountGasLimits,
+      preVerificationGas: 100_000,
+      gasFees,
       paymasterAndData: paymaster,
       signature: "0x",
     };
 
     const userOpHash = await entryPoint.getUserOpHash(userOp);
-    userOp.signature = await signer.signMessage(
-      ethers.utils.arrayify(userOpHash),
-    );
+    userOp.signature = await signer.signMessage(getBytes(userOpHash));
 
     return userOp;
   }
 
-  const getInitCode = (accountFactory: AccountFactory, account: string) =>
-    accountFactory.address +
+  const getInitCode = (
+    factoryAddress: string,
+    accountFactory: AccountFactory,
+    account: string,
+  ) =>
+    factoryAddress +
     accountFactory.interface
       .encodeFunctionData("createBaseAccount", [account])
       .slice(2);
@@ -82,27 +113,36 @@ describe("[BaseAccount]", () => {
     expect(accountFactory.createRecoverableAccount).to.exist;
   });
 
-  it("Should execute", async () => {
+  it.only("Should execute", async () => {
     const { accountFactory, entryPoint, paymaster, owner, otherAccount } =
       await loadFixture(deploy);
 
-    await entryPoint.depositTo(paymaster.address, { value: parseEther("100") });
+    const paymasterAddr = await paymaster.getAddress();
 
-    const initCode = getInitCode(accountFactory, owner.address);
+    await entryPoint.depositTo(paymasterAddr, {
+      value: parseEther("100"),
+    });
+    const factoryAddress = await accountFactory.getAddress();
+    const initCode = getInitCode(factoryAddress, accountFactory, owner.address);
     const sender = (await getSender(entryPoint, initCode)) as string;
     const Account = await ethers.getContractFactory("BaseAccount");
 
-    const userOp = await getSignedUserOp(
+    const paymasterAndData = defaultAbiCoder.encode(
+      ["address", "uint48", "uint48"],
+      [paymasterAddr, Date.now() + 60 * 15, await time.latest()],
+    );
+
+    const userOp: PackedUserOperationStruct = await getSignedUserOp(
       sender,
       await entryPoint.getNonce(sender, 0),
       initCode,
       Account.interface.encodeFunctionData("execute"),
-      paymaster.address,
+      paymasterAndData,
       entryPoint,
       owner,
     );
 
-    const tx = await entryPoint.handleOps([userOp], owner.address);
+    const tx = await entryPoint.handleOps([userOp], await owner.getAddress());
     await tx.wait();
 
     const account = await ethers.getContractAt("BaseAccount", sender);

@@ -5,11 +5,11 @@ import {
   setClaimConditionsAircraft,
 } from "../../utils";
 import { AirlineCoin, LicenseNFT } from "../../typechain-types";
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { parseUnits } from "ethers/lib/utils";
+import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
+import { parseUnits } from "ethers";
 
 const deployAircraft = async (
-  accounts: SignerWithAddress[],
+  accounts: HardhatEthersSigner[],
   airlineCoin: AirlineCoin,
   license: LicenseNFT,
 ) => {

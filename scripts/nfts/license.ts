@@ -5,15 +5,15 @@ import {
   setClaimConditionsLicense,
 } from "../../utils";
 import { AirlineCoin } from "../../typechain-types";
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import { ethers } from "hardhat";
-import { parseUnits } from "ethers/lib/utils";
+import { parseUnits } from "ethers";
 
 const MAX_INT_ETH =
   "0x8000000000000000000000000000000000000000000000000000000000000000";
 
 const deployLicense = async (
-  accounts: SignerWithAddress[],
+  accounts: HardhatEthersSigner[],
   airlineCoin: AirlineCoin,
 ) => {
   console.group("----- DEPLOY LICENSE -----");

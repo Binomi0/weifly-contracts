@@ -1,7 +1,6 @@
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { BigNumber } from "ethers";
 import {
   deployAircraftNFT,
   deployAirlineCoin,
@@ -13,8 +12,8 @@ import {
   setClaimConditionsAircraft,
   setClaimConditionsLicense,
 } from "../../utils";
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { parseUnits } from "ethers/lib/utils";
+import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
+import { parseUnits } from "ethers";
 import { AirlineCoin } from "../../typechain-types";
 
 describe("Aircraft Cessna 700", async function () {
@@ -22,7 +21,7 @@ describe("Aircraft Cessna 700", async function () {
     const [owner, otherAccount, thirdAccount] = await ethers.getSigners();
     const airlineCoin = await deployAirlineCoin(owner.address);
     const license = await deployLicenseNFT(owner.address);
-    const aircraft = await deployAircraftNFT(owner, license.address);
+    const aircraft = await deployAircraftNFT(owner, await license.getAddress());
 
     return {
       license,
@@ -36,7 +35,7 @@ describe("Aircraft Cessna 700", async function () {
 
   async function setBalances(
     airlineCoin: AirlineCoin,
-    from: SignerWithAddress,
+    from: HardhatEthersSigner,
     to: string,
     amount: string,
   ) {
@@ -59,7 +58,7 @@ describe("Aircraft Cessna 700", async function () {
 
     const cc = await aircraft.claimCondition(1);
 
-    expect(cc.maxClaimableSupply).to.be.equal(BigNumber.from("100"));
+    expect(cc.maxClaimableSupply).to.be.equal(BigInt("100"));
   });
 
   it("Should reject if no license 1 owner", async function () {
@@ -87,10 +86,10 @@ describe("Aircraft Cessna 700", async function () {
     await setBalances(airlineCoin, owner, otherAccount.address, "20");
     await airlineCoin
       .connect(otherAccount)
-      .approve(license.address, parseUnits("10", "ether"));
+      .approve(await license.getAddress(), parseUnits("10", "ether"));
     await airlineCoin
       .connect(otherAccount)
-      .approve(aircraft.address, parseUnits("10", "ether"));
+      .approve(await aircraft.getAddress(), parseUnits("10", "ether"));
 
     await lazyMintLicense("2", 0, owner, license);
     await setClaimConditionsLicense(license, 0, airlineCoin);

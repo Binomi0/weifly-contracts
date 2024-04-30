@@ -14,7 +14,7 @@ describe("Aircraft", function () {
     const airlineCoin = await deployAirlineCoin(owner.address);
     const airlineRewardCoin = await deployAirlineRewardCoin(owner.address);
     const license = await deployLicenseNFT(owner.address);
-    const aircraft = await deployAircraftNFT(owner, license.address);
+    const aircraft = await deployAircraftNFT(owner, await license.getAddress());
 
     return {
       license,

@@ -1,7 +1,7 @@
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import { ethers } from "hardhat";
 
-const deployTokens = async (owner: SignerWithAddress) => {
+const deployTokens = async (owner: HardhatEthersSigner) => {
   console.group("---- DEPLOY TOKENS ----");
   console.log("---- DEPLOY AIRL ----");
   const Airline = await ethers.getContractFactory("AirlineCoin");

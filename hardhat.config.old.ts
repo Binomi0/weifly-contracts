@@ -1,17 +1,20 @@
-import hardhatEthers from "@nomicfoundation/hardhat-ethers";
 import { HardhatUserConfig } from "hardhat/config";
+import "@nomicfoundation/hardhat-toolbox";
+import "solidity-coverage";
+import "hardhat-gas-reporter";
 
-// const COINMARKETCAP_API_KEY = "eb317b12-ae71-4ecb-84cb-9fcaf9459954";
+const COINMARKETCAP_API_KEY = "eb317b12-ae71-4ecb-84cb-9fcaf9459954";
 
 const config: HardhatUserConfig = {
-  paths: {
-    sources: "./contracts",
-    tests: "./test",
-    cache: "./cache",
-    artifacts: "./artifacts",
+  gasReporter: {
+    enabled: !!process.env.REPORT,
+    currency: "EUR",
+    L1: "ethereum",
+    coinmarketcap: COINMARKETCAP_API_KEY,
+    L1Etherscan: process.env.ETHERSCAN_API_KEY,
   },
   solidity: {
-    version: "0.8.24",
+    version: "0.8.23",
     settings: {
       optimizer: {
         enabled: true,
@@ -21,9 +24,9 @@ const config: HardhatUserConfig = {
   },
   networks: {
     localhost: {
-      url: "http://192.168.1.101:8545",
+      url: "http://127.0.0.1:8545",
       chainId: 42161,
-      type: "http",
+      allowUnlimitedContractSize: false,
     },
     sepolia: {
       url: "https://eth-sepolia.g.alchemy.com",
@@ -34,7 +37,7 @@ const config: HardhatUserConfig = {
       gas: 3000000,
       gasPrice: "auto",
       timeout: 100000,
-      type: "http",
+      httpTimeout: 10000,
     },
     "arbitrum-sepolia": {
       url: "https://sepolia-rollup.arbitrum.io/rpc",
@@ -45,10 +48,11 @@ const config: HardhatUserConfig = {
       gas: 3000000,
       gasPrice: "auto",
       timeout: 100000,
-      type: "http",
     },
   },
-  plugins: [hardhatEthers],
+  etherscan: {
+    apiKey: process.env.ETHERSCAN_API_KEY,
+  },
 };
 
 export default config;

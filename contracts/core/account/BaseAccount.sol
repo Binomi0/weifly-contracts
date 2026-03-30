@@ -4,14 +4,14 @@ pragma solidity ^0.8.23;
 import "@account-abstraction/contracts/interfaces/IAccount.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "../AirlineUser.sol";
 
-contract BaseAccount is IAccount, AirlineUser {
+contract BaseAccount is IAccount, AirlineUser, Ownable {
     uint256 public count;
-    address public owner;
 
-    constructor(address _owner) {
-        owner = _owner;
+    constructor(address _owner) Ownable(_owner) {
+        count = 0;
     }
 
     function validateUserOp(
@@ -24,7 +24,7 @@ contract BaseAccount is IAccount, AirlineUser {
             userOp.signature
         );
 
-        return owner == recovered ? 0 : 1;
+        return owner() == recovered ? 0 : 1;
     }
 
     function execute() external {

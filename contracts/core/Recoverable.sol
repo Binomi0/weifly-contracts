@@ -4,81 +4,101 @@ pragma solidity ^0.8.23;
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "../interfaces/IRecoverable.sol";
 
-contract Recoverable is IRecoverable, ReentrancyGuard {
-    address[2] public admins = [address(0), address(0)];
-    uint256 public locked = 1;
+/**
+ * @title Recoverable
+ * @dev Adds a recovery mechanism to Ownable contracts.
+ *      The owner can set a recovery address, which can later restore a new owner.
+ */
+contract Recoverable is IRecoverable, Ownable2Step, ReentrancyGuard {
+    address public recoveryAddress;
+    bool public isRecoveryEnabled;
 
-    // ✅ Events para monitoring y auditoría externa
-    event AdminAdded(address indexed oldAdmin, address indexed newAdmin);
-    event OwnerRestored(address indexed newOwner);
-    event AdminRemoved(address indexed oldAdmin, address indexed newAdmin);
-    event StatusChanged(bytes32 indexed newStatus, uint8 _locked);
+    // Events
+    event RecoveryAddressSet(address indexed oldRecovery, address indexed newRecovery);
+    event OwnerRecovered(address indexed oldOwner, address indexed newOwner);
+    event RecoveryDisabled();
 
-    constructor(address _owner) {
-        admins[0] = _owner;
+    constructor() Ownable2Step(msg.sender) {
+        isRecoveryEnabled = false;
+        recoveryAddress = address(0);
     }
 
     /**
-     * Current admin can add an address to be the recovery account address
-     *
-     * @param _recoverSigned arrayify(id(address))
-     * @param _signature signMessage(arrayify(id(address)))
-     * @param _recover address
+     * @dev Owner sets a recovery address that can restore ownership in case of loss.
+     * @param _recoveryAddress The address authorized to recover ownership
+     * @param _signature Owner's signature to authorize this action
+     * @param _messageHash Hash of the message that was signed
      */
-    function addAdmin(
-        bytes32 _recoverSigned,
+    function setRecoveryAddress(
+        address _recoveryAddress,
         bytes memory _signature,
-        address _recover
-    ) public nonReentrant {
-        address recovered = ECDSA.recover(
-            MessageHashUtils.toEthSignedMessageHash(_recoverSigned),
-            _signature
-        );
+        bytes32 _messageHash
+    ) external onlyOwner nonReentrant {
+        require(_recoveryAddress != address(0), "Invalid recovery address");
+        require(_recoveryAddress != owner(), "Cannot set owner as recovery");
 
-        require(admins[0] == recovered, "Only owner account can call this");
-        emit AdminRemoved(admins[1], admins[1]); // ✅ Evento para auditoría
-        admins[1] = _recover;
-        locked = 0;
+        // Verify signature matches the owner
+        bytes32 ethSignedHash = MessageHashUtils.toEthSignedMessageHash(_messageHash);
+        address recovered = ECDSA.recover(ethSignedHash, _signature);
+        require(recovered == owner(), "Invalid signature");
+
+        address oldRecovery = recoveryAddress;
+        recoveryAddress = _recoveryAddress;
+        isRecoveryEnabled = true;
+
+        emit RecoveryAddressSet(oldRecovery, _recoveryAddress);
     }
 
     /**
-     * Current recovery address can restore owner
-     *
-     * @param _newOwnerSigned arrayify(id(address))
-     * @param _signature signMessage(arrayify(id(address)))
-     * @param _newOwner address
+     * @dev Recovery address can restore a new owner (e.g., after losing access).
+     * @param _newOwner The new owner address
+     * @param _signature Recovery address's signature to authorize this action
+     * @param _messageHash Hash of the message that was signed
      */
-    function setNewOwner(
-        bytes32 _newOwnerSigned,
+    function recoverOwner(
+        address _newOwner,
         bytes memory _signature,
-        address _newOwner
-    ) public nonReentrant {
-        address recovered = ECDSA.recover(
-            MessageHashUtils.toEthSignedMessageHash(_newOwnerSigned),
-            _signature
-        );
+        bytes32 _messageHash
+    ) external nonReentrant {
+        require(isRecoveryEnabled, "Recovery not enabled");
+        require(recoveryAddress != address(0), "No recovery address set");
+        require(_newOwner != address(0), "Invalid new owner address");
 
-        require(admins[1] == recovered, "Only recover account can call this");
-        emit OwnerRestored(_newOwner); // ✅ Evento para auditoría
-        admins[0] = _newOwner;
+        // Verify signature matches the recovery address
+        bytes32 ethSignedHash = MessageHashUtils.toEthSignedMessageHash(_messageHash);
+        address recovered = ECDSA.recover(ethSignedHash, _signature);
+        require(recovered == recoveryAddress, "Invalid signature");
+
+        address oldOwner = owner();
+        _transferOwnership(_newOwner);
+
+        // Optional: disable recovery after use to prevent future unauthorized recoveries
+        // isRecoveryEnabled = false;
+        // recoveryAddress = address(0);
+
+        emit OwnerRecovered(oldOwner, _newOwner);
     }
 
-    function changeLock(
-        bytes32 _newStatus,
-        bytes memory _signature,
-        uint8 _locked
-    ) public nonReentrant {
-        address recovered = ECDSA.recover(
-            MessageHashUtils.toEthSignedMessageHash(_newStatus),
-            _signature
-        );
+    /**
+     * @dev Owner can disable the recovery mechanism.
+     */
+    function disableRecovery() external onlyOwner nonReentrant {
+        require(isRecoveryEnabled, "Recovery already disabled");
+        isRecoveryEnabled = false;
+        recoveryAddress = address(0);
+        emit RecoveryDisabled();
+    }
 
-        require(admins[0] == recovered, "Only recover account can call this");
-        require(_locked != locked, "Trying to set the same value");
-
-        locked = uint8(_locked);
-        emit StatusChanged(_newStatus, _locked); // ✅ Evento mejorado
+    /**
+     * @dev Owner can remove the recovery address without disabling the mechanism.
+     */
+    function removeRecoveryAddress() external onlyOwner nonReentrant {
+        require(recoveryAddress != address(0), "No recovery address set");
+        address oldRecovery = recoveryAddress;
+        recoveryAddress = address(0);
+        emit RecoveryAddressSet(oldRecovery, address(0));
     }
 }

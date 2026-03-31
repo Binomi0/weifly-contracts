@@ -4,15 +4,15 @@ pragma solidity ^0.8.23;
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "../interfaces/IRecoverable.sol";
+import "@openzeppelin/contracts/access/Ownable2Step.sol";
+import "../../interfaces/IRecoverable.sol";
 
 /**
  * @title Recoverable
  * @dev Adds a recovery mechanism to Ownable contracts.
  *      The owner can set a recovery address, which can later restore a new owner.
  */
-contract Recoverable is IRecoverable, Ownable2Step, ReentrancyGuard {
+abstract contract Recoverable is IRecoverable, Ownable2Step, ReentrancyGuard {
     address public recoveryAddress;
     bool public isRecoveryEnabled;
 
@@ -21,7 +21,7 @@ contract Recoverable is IRecoverable, Ownable2Step, ReentrancyGuard {
     event OwnerRecovered(address indexed oldOwner, address indexed newOwner);
     event RecoveryDisabled();
 
-    constructor() Ownable2Step(msg.sender) {
+    constructor() Ownable2Step() {
         isRecoveryEnabled = false;
         recoveryAddress = address(0);
     }

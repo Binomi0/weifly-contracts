@@ -1,35 +1,30 @@
-## Getting Started
+# Smart Contracts WeiFly
 
-Create a project using this example:
+## 📦 Tokens y Licencias
 
-```bash
-npx thirdweb create --contract --template hardhat-typescript-starter
-```
+### Tokenomics
 
-You can start editing the page by modifying `contracts/MyContract.sol`.
+- **AIRL**: Token principal (ERC-4337)
+  - Total supply: 10M tokens
+  - Distribución:
+    - 40% Rewards Pool: 4M AIRL
+    - 15% Tesorería: 1.5M AIRL
+    - 15% Marketing: 1.5M AIRL
+    - 10% Desarrollo: 1M AIRL
+    - 20% Reserva: 2M AIRL
 
-To add functionality to your contracts, you can use the `thirdweb/contracts` package which provides base contracts and extensions to inherit. The package is already installed with this project. Head to our [Contracts SDK Docs](https://portal.thirdweb.com/thirdweb-deploy/contract-extensions) to learn more.
+- **AIRG**: Token de staking (ERC-4337)
+  - Ratio: 1 AIRL = 100 AIRG/día
+  - Burns controlados
+  - Inicialmente limitado para validar demanda
 
-## Deploying Contracts
+- **NFT Licencias**:
+  - N1: C172 (Básico)
+  - N2: C700 (Avanzado)
+  - N3: B737 (Comercial)
+  - N4: A320 (Professional)
 
-When you're ready to deploy your contracts, just run one of the following command to deploy you're contracts:
+### Network
 
-```bash
-npm run deploy
-# or
-yarn deploy
-```
-
-## Releasing Contracts
-
-If you want to release a version of your contracts publicly, you can use one of the followings command:
-
-```bash
-npm run release
-# or
-yarn release
-```
-
-## Join our Discord!
-
-For any questions, suggestions, join our discord at [https://discord.gg/dKd4GVPB](https://discord.gg/dKd4GVPB).
+- **Mainnet**: Arbitrum
+- **Testnet**: Sepolia

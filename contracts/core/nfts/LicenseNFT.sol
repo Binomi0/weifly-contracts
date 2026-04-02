@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Royalty.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
-import "@thirdweb-dev/contracts/external-deps/openzeppelin/security/ReentrancyGuard.sol";
+
 
 /// @title LicenseNFT - NFT de licencias de vuelo N1-N4
 /// @notice Contrato ERC-721 simplificado y seguro para licencias de piloto
@@ -141,10 +141,10 @@ contract LicenseNFT is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
     function parseLicenseLevel(
         string memory licenseType
     ) public pure returns (uint256) {
-        if (keccak256(bytes(licenseType)) == keccak256("N1")) return 1;
-        if (keccak256(bytes(licenseType)) == keccak256("N2")) return 2;
-        if (keccak256(bytes(licenseType)) == keccak256("N3")) return 3;
-        if (keccak256(bytes(licenseType)) == keccak256("N4")) return 4;
+        if (keccak256(bytes(licenseType)) == keccak256("LAPL")) return 1;
+        if (keccak256(bytes(licenseType)) == keccak256("PPL")) return 2;
+        if (keccak256(bytes(licenseType)) == keccak256("CPL")) return 3;
+        if (keccak256(bytes(licenseType)) == keccak256("ATPL")) return 4;
         return 0; // Invalido
     }
 
@@ -156,19 +156,17 @@ contract LicenseNFT is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
     }
 
     /// @notice Base URI dinámico para evitar exposición de metadata
-    /// @param tokenId ID del token
     /// @return URI base
-    function _baseURI(uint256 tokenId) internal view returns (string memory) {
+    function _baseURI() internal pure override returns (string memory) {
         // Retorna URI base seguro sin exponer datos sensibles
         return "https://ipfs.weifly.ai/nft/";
     }
 
     /// @notice Override de _tokenURI para usar _baseURI dinámico
-    function _tokenURI(uint256 tokenId) internal view returns (string memory) {
+    function _tokenURI(uint256 tokenId) internal pure returns (string memory) {
         // La metadata completa viene en el setTokenURI
-        string memory base = _baseURI(tokenId);
-        string memory file = string.concat(uint256ToHex(tokenId), ".json");
-        return string.concat(base, file);
+        string memory base = _baseURI();
+        return string.concat(base, uint256ToHex(tokenId));
     }
 
     /// @notice Override de royaltyInfo

@@ -6,7 +6,7 @@ interface IAirlinePilot {
     event LicenseGranted(address indexed pilot, uint256 token, uint256 licenseLevel);
     event FlightRecorded(address indexed pilot, uint256 flightHours);
     event RequestCreated(address indexed pilot, address indexed airline, uint256 requestId);
-    event RequestApproved(address indexed requestId, address indexed reviewer);
+    event RequestApproved(uint256 indexed requestId, address indexed reviewer);
 
     function registerPilot(address pilot, uint256 flightHours, address airline) external;
     function requestAirlineAccess(address pilot, address airline) external;

@@ -2,15 +2,14 @@
 pragma solidity ^0.8.23;
 
 import "@thirdweb-dev/contracts/base/Staking20Base.sol";
+import "./interface/IStakingAirline.sol";
 
-contract StakingAirline is Staking20Base {
-    uint256 private constant MIN_STAKE_AMOUNT = 1e18;
-    uint256 private constant MIN_REWARD_CLAIM = 100e18; // 1 token mínimo para claim
+contract StakingAirline is Staking20Base, IStakingAirline {
+    uint256 private constant MIN_STAKE_AMOUNT = 1e18; // 1 token mínimo para stake
+    uint256 private constant MIN_REWARD_CLAIM = 100e18; // 100 tokens mínimo para claim
     uint256 private constant MAX_STAKE_AMOUNT = 1_000_000e18; // 1M tokens máximo
 
-    event NewPilotStake(address indexed pilot, uint256 amount);
-    event NewPilotWithdraw(address indexed pilot, uint256 amount);
-    event RewardsClaimed(address indexed pilot, uint256 amount);
+// Constants and State
 
     constructor(
         uint80 _timeUnit,
@@ -36,14 +35,7 @@ contract StakingAirline is Staking20Base {
         require(_timeUnit > 0, "Invalid time unit");
     }
 
-    function _mintRewards(address _staker, uint256 _rewards) internal virtual override {
-        // No mintear rewards muy pequeñas para evitar spam de eventos
-        if (_rewards < MIN_REWARD_CLAIM) {
-            return;
-        }
-        super._mintRewards(_staker, _rewards);
-        emit RewardsClaimed(_staker, _rewards);
-    }
+    // Overriding internal functions to add custom logic or restrictions
 
     function _stake(uint256 _amount) internal virtual override {
         require(_amount >= MIN_STAKE_AMOUNT, "Stake amount below minimum");
@@ -58,9 +50,25 @@ contract StakingAirline is Staking20Base {
     }
 
     function _claimRewards() internal virtual override {
-        uint256 rewards = _calculateRewards(msg.sender);
+        uint256 rewards = _availableRewards(_stakeMsgSender());
         require(rewards >= MIN_REWARD_CLAIM, "Rewards below minimum claim amount");
 
         super._claimRewards();
+    }
+
+    /*//////////////////////////////////////////////////////////////
+                            Getters
+    //////////////////////////////////////////////////////////////*/
+
+    function getMinStakeAmount() external pure override returns (uint256) {
+        return MIN_STAKE_AMOUNT;
+    }
+
+    function getMinRewardClaim() external pure override returns (uint256) {
+        return MIN_REWARD_CLAIM;
+    }
+
+    function getMaxStakeAmount() external pure override returns (uint256) {
+        return MAX_STAKE_AMOUNT;
     }
 }

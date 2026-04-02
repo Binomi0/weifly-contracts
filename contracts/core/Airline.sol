@@ -2,14 +2,14 @@
 pragma solidity ^0.8.23;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "../interfaces/IAirline.sol";
+import "./interface/IAirline.sol";
 
 /**
  * @title Airline
  * @dev Manages airline enrollment and status control for WeiFly pilots.
  *      Securely handles pilot registration, level management, and status changes.
  */
-contract Airline is IAirline, Ownable {
+abstract contract Airline is IAirline, Ownable {
     bool public isOpen = true;
     uint256 public totalPilotsCount;
     mapping(address => uint8) public pilots;

@@ -1,9 +1,18 @@
-import hardhatEthers from "@nomicfoundation/hardhat-ethers";
 import { HardhatUserConfig } from "hardhat/config";
-
-// const COINMARKETCAP_API_KEY = "eb317b12-ae71-4ecb-84cb-9fcaf9459954";
+import hardhatEthers from "@nomicfoundation/hardhat-ethers";
+import hardhatViem from "@nomicfoundation/hardhat-viem";
+import hardhatViemAssertions from "@nomicfoundation/hardhat-viem-assertions";
+import hardhatNodeTestRunner from "@nomicfoundation/hardhat-node-test-runner";
+import hardhatNetworkHelpers from "@nomicfoundation/hardhat-network-helpers";
 
 const config: HardhatUserConfig = {
+  plugins: [
+    hardhatEthers,
+    hardhatViem,
+    hardhatViemAssertions,
+    hardhatNodeTestRunner,
+    hardhatNetworkHelpers,
+  ],
   paths: {
     sources: "./contracts",
     tests: "./test",
@@ -48,7 +57,6 @@ const config: HardhatUserConfig = {
       type: "http",
     },
   },
-  plugins: [hardhatEthers],
 };
 
 export default config;

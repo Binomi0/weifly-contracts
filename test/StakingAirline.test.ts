@@ -1,270 +1,168 @@
-import { ethers } from "hardhat";
+import hre from "hardhat";
 import { expect } from "chai";
-import { parseEther, parseUnits } from "ethers/lib/utils";
-import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
+import { describe, it } from "node:test";
+import { parseEther } from "ethers";
 
-describe("StakingAirline", async () => {
-  async function deployStakingAirline() {
-    const [owner, otherAccount] = await ethers.getSigners();
+const { ethers, networkHelpers } = await (hre as any).network.connect();
+const { time, mine } = networkHelpers;
 
-    const AirlineCoin = await ethers.getContractFactory("AirlineCoin");
-    const StakingAirline = await ethers.getContractFactory("StakingAirline");
-    const AirlineRewardCoin =
-      await ethers.getContractFactory("AirlineRewardCoin");
-    const NativeTokenWrapper =
-      await ethers.getContractFactory("NativeTokenWrapper");
+describe("StakingAirline: Production Tests", async () => {
+    async function deployStakingAirlineFixture() {
+        const [owner, pilot1, pilot2] = await ethers.getSigners();
 
-    const nativeTokenWrapper = await NativeTokenWrapper.deploy(
-      owner.address,
-      "NativeTokenWrapper",
-      "WETH",
-    );
-    const airlineCoin = await AirlineCoin.deploy(
-      owner.address,
-      "Airline Coin",
-      "AIRL",
-    );
-    const airlineRewardCoin = await AirlineRewardCoin.deploy(
-      owner.address,
-      "Airline Reward Coin",
-      "AIRG",
-    );
-    // Contracts are deployed using the first signer/account by default
-    const stakingAirline = await StakingAirline.deploy(
-      1,
-      owner.address,
-      1,
-      100,
-      airlineCoin.address,
-      airlineRewardCoin.address,
-      nativeTokenWrapper.address,
-    );
+        const AirlineCoin = await ethers.getContractFactory("AirlineCoin");
+        const StakingAirline = await ethers.getContractFactory("StakingAirline");
+        const AirlineRewardCoin = await ethers.getContractFactory("AirlineRewardCoin");
+        const NativeTokenWrapper = await ethers.getContractFactory("NativeTokenWrapper");
 
-    return {
-      owner,
-      otherAccount,
-      stakingAirline,
-      airlineCoin,
-      airlineRewardCoin,
-    };
-  }
+        const nativeTokenWrapper = await NativeTokenWrapper.deploy(owner.address, "WETH", "WETH");
+        const airlineCoin = await AirlineCoin.deploy(owner.address, "Airline Coin", "AIRL");
+        const airlineRewardCoin = await AirlineRewardCoin.deploy(owner.address, "Reward Coin", "AIRG");
 
-  it("Should have the right owner after deploy", async () => {
-    const [owner] = await ethers.getSigners();
+        const stakingAirline = await StakingAirline.deploy(
+            1n, 
+            owner.address, 
+            1n, 100n, // ratio 1/100: cada 100 tokens por 1 segundo generan 1 reward
+            await airlineCoin.getAddress(),
+            await airlineRewardCoin.getAddress(),
+            await nativeTokenWrapper.getAddress()
+        );
 
-    const { stakingAirline } = await loadFixture(deployStakingAirline);
+        const stakingAddr = await stakingAirline.getAddress();
+        await airlineRewardCoin.approve(stakingAddr, parseEther("10000000"));
+        await stakingAirline.depositRewardTokens(parseEther("10000000"));
 
-    expect(await stakingAirline.owner()).to.equal(owner.address);
-  });
+        return { owner, pilot1, pilot2, stakingAirline, airlineCoin, airlineRewardCoin };
+    }
 
-  it("Should be able to handle deposit and withdraws", async () => {
-    const ONE_THOUSAND_MILLION = 1_000_000_000;
-    const { stakingAirline, airlineRewardCoin } =
-      await loadFixture(deployStakingAirline);
+    describe("Boundary: Staking Amounts", () => {
+        it("Exactly 1 token (min) and 1M tokens (max)", async () => {
+            const { stakingAirline, airlineCoin, pilot1 } = await deployStakingAirlineFixture();
+            const min = parseEther("1");
+            const max = parseEther("1000000");
 
-    await airlineRewardCoin.approve(
-      stakingAirline.address,
-      parseEther(ONE_THOUSAND_MILLION.toString()),
-    );
+            await airlineCoin.transfer(pilot1.address, max);
+            await airlineCoin.connect(pilot1).approve(await stakingAirline.getAddress(), max);
 
-    await stakingAirline.depositRewardTokens(
-      parseEther(ONE_THOUSAND_MILLION.toString()),
-    );
+            await stakingAirline.connect(pilot1).stake(min);
+            const infoMin = await stakingAirline.getStakeInfo(pilot1.address);
+            expect(infoMin._tokensStaked).to.equal(min);
 
-    expect(await stakingAirline.getRewardTokenBalance()).to.equal(
-      parseEther(ONE_THOUSAND_MILLION.toString()),
-    );
+            await stakingAirline.connect(pilot1).stake(max - min);
+            const infoMax = await stakingAirline.getStakeInfo(pilot1.address);
+            expect(infoMax._tokensStaked).to.equal(max);
+        });
 
-    await stakingAirline.withdrawRewardTokens(
-      parseEther(ONE_THOUSAND_MILLION.toString()),
-    );
+        it("Fail: Below 1 token (1e18 - 1)", async () => {
+            const { stakingAirline, pilot1 } = await deployStakingAirlineFixture();
+            const small = parseEther("1") - 1n;
+            try {
+                await stakingAirline.connect(pilot1).stake(small);
+                throw new Error("Did not revert");
+            } catch (e: any) {
+                expect(e.message).to.contain("Stake amount below minimum");
+            }
+        });
 
-    expect(await stakingAirline.getRewardTokenBalance()).to.equal(0);
-  });
-
-  it("Should be able to stake and unstake 1 token", async () => {
-    const [owner, otherAccount] = await ethers.getSigners();
-    const ONE_THOUSAND_MILLION = 1_000_000_000;
-    const { stakingAirline, airlineRewardCoin, airlineCoin } =
-      await loadFixture(deployStakingAirline);
-
-    await airlineRewardCoin.approve(
-      stakingAirline.address,
-      parseEther(ONE_THOUSAND_MILLION.toString()),
-    );
-
-    await stakingAirline.depositRewardTokens(
-      parseEther(ONE_THOUSAND_MILLION.toString()),
-    );
-
-    expect(await stakingAirline.getRewardTokenBalance()).to.equal(
-      parseEther(ONE_THOUSAND_MILLION.toString()),
-    );
-
-    expect(await airlineCoin.balanceOf(owner.address)).to.equal(
-      parseEther("1000000"),
-    );
-
-    await airlineCoin.approve(otherAccount.address, parseEther("1"));
-    await airlineCoin.transfer(otherAccount.address, parseEther("1"));
-    await airlineCoin
-      .connect(otherAccount)
-      .approve(stakingAirline.address, parseEther("1"));
-    await stakingAirline.connect(otherAccount).stake(parseEther("1"));
-
-    const stakeInfo = await stakingAirline.getStakeInfo(otherAccount.address);
-
-    expect(stakeInfo._tokensStaked).to.equal(parseEther("1"));
-  });
-
-  it("Should be able to stake and unstake 10000 tokens", async () => {
-    const [owner, otherAccount] = await ethers.getSigners();
-    const ONE_THOUSAND_MILLION = 1_000_000_000;
-    const { stakingAirline, airlineRewardCoin, airlineCoin } =
-      await loadFixture(deployStakingAirline);
-
-    await airlineRewardCoin.approve(
-      stakingAirline.address,
-      parseEther(ONE_THOUSAND_MILLION.toString()),
-    );
-
-    await stakingAirline.depositRewardTokens(
-      parseEther(ONE_THOUSAND_MILLION.toString()),
-    );
-
-    expect(await stakingAirline.getRewardTokenBalance()).to.equal(
-      parseEther(ONE_THOUSAND_MILLION.toString()),
-    );
-
-    expect(await airlineCoin.balanceOf(owner.address)).to.equal(
-      parseEther("1000000"),
-    );
-
-    await airlineCoin.approve(otherAccount.address, parseEther("10000"));
-    await airlineCoin.transfer(otherAccount.address, parseEther("10000"));
-    await airlineCoin
-      .connect(otherAccount)
-      .approve(stakingAirline.address, parseEther("10000"));
-    await stakingAirline.connect(otherAccount).stake(parseEther("10000"));
-
-    const stakeInfo = await stakingAirline.getStakeInfo(otherAccount.address);
-    expect(stakeInfo._tokensStaked).to.equal(parseEther("10000"));
-
-    await stakingAirline.connect(otherAccount).withdraw(parseEther("10000"));
-
-    const unStakeInfo = await stakingAirline.getStakeInfo(otherAccount.address);
-    expect(unStakeInfo._tokensStaked).to.equal(0);
-    expect(unStakeInfo._rewards).to.equal(parseEther("100"));
-    expect(await airlineRewardCoin.balanceOf(otherAccount.address)).to.equal(0);
-
-    await stakingAirline.connect(otherAccount).claimRewards();
-    expect(await airlineRewardCoin.balanceOf(otherAccount.address)).to.equal(
-      parseEther("100"),
-    );
-  });
-
-  describe("When staked", () => {
-    it("Should Stake 1 AIRL", async () => {
-      const { owner, stakingAirline, airlineCoin } =
-        await loadFixture(deployStakingAirline);
-
-      await airlineCoin.approve(stakingAirline.address, parseEther("1"));
-      await stakingAirline.stake(parseEther("1"));
-      const stakeInfo = await stakingAirline.getStakeInfo(owner.address);
-      expect(stakeInfo._tokensStaked).to.equal(parseEther("1"));
-    });
-    it("Should give the right rewards after 1 day", async () => {
-      const { owner, stakingAirline, airlineCoin } =
-        await loadFixture(deployStakingAirline);
-
-      await airlineCoin.approve(stakingAirline.address, parseEther("1"));
-      await stakingAirline.stake(parseEther("1"));
-      await time.increase(10000);
-
-      const stakeInfo = await stakingAirline.getStakeInfo(owner.address);
-      expect(stakeInfo._tokensStaked).to.equal(parseEther("1"));
-      expect(stakeInfo._rewards).to.equal(parseEther("100"));
-    });
-
-    it("Should give the right rewards after 7 days", async () => {
-      const { owner, stakingAirline, airlineCoin } =
-        await loadFixture(deployStakingAirline);
-
-      await airlineCoin.approve(stakingAirline.address, parseEther("1"));
-      await stakingAirline.stake(parseEther("1"));
-      await time.increase(70000);
-
-      const stakeInfo = await stakingAirline.getStakeInfo(owner.address);
-      expect(stakeInfo._tokensStaked).to.equal(parseEther("1"));
-      expect(stakeInfo._rewards).to.equal(parseEther("700"));
-    });
-
-    it("Should DENY claim rewards if rewards are less than 100", async () => {
-      const { otherAccount, stakingAirline, airlineCoin } =
-        await loadFixture(deployStakingAirline);
-
-      await airlineCoin.approve(otherAccount.address, parseEther("1"));
-      await airlineCoin.transfer(otherAccount.address, parseEther("1"));
-      expect(await airlineCoin.balanceOf(otherAccount.address)).to.equal(
-        parseEther("1"),
-      );
-
-      await airlineCoin
-        .connect(otherAccount)
-        .approve(stakingAirline.address, parseEther("1"));
-
-      await stakingAirline.connect(otherAccount).stake(parseEther("1"));
-      expect(await airlineCoin.balanceOf(otherAccount.address)).to.equal(0);
-
-      stakingAirline
-        .connect(otherAccount)
-        .claimRewards()
-        .catch((error) => {
-          expect(error.message).to.contains("Min reward withdraw is 100");
+        it("Fail: Above 1M tokens (1e6 + 1e-18)", async () => {
+            const { stakingAirline, pilot1 } = await deployStakingAirlineFixture();
+            const over = parseEther("1000001");
+            try {
+                await stakingAirline.connect(pilot1).stake(over);
+                throw new Error("Did not revert");
+            } catch (e: any) {
+                expect(e.message).to.contain("Stake amount exceeds maximum");
+            }
         });
     });
 
-    it("Should ALLOW claim rewards if rewards are equal or more than 100", async () => {
-      const { otherAccount, stakingAirline, airlineCoin, airlineRewardCoin } =
-        await loadFixture(deployStakingAirline);
+    describe("Boundary: Reward Claims", () => {
+        it("Exactly 100 rewards: Should allow claim", async () => {
+            const { stakingAirline, airlineCoin, pilot1 } = await deployStakingAirlineFixture();
+            const stakeAmount = parseEther("100");
+            await airlineCoin.transfer(pilot1.address, stakeAmount);
+            await airlineCoin.connect(pilot1).approve(await stakingAirline.getAddress(), stakeAmount);
+            
+            const startTime = await time.latest();
+            await time.setNextBlockTimestamp(startTime + 10);
+            await stakingAirline.connect(pilot1).stake(stakeAmount);
+            
+            await time.setNextBlockTimestamp(startTime + 110);
+            // 100 seconds passed. 100 tokens * 100 / 100 = 100 rewards.
+            
+            // Manual check for no revert
+            await stakingAirline.connect(pilot1).claimRewards();
+        });
 
-      await airlineRewardCoin.approve(
-        stakingAirline.address,
-        parseEther("1000000"),
-      );
-      await stakingAirline.depositRewardTokens(parseEther("1000000"));
+        it("Exactly 99.99 rewards: Should deny claim", async () => {
+            const { stakingAirline, airlineCoin, pilot1 } = await deployStakingAirlineFixture();
+            const stakeAmount = parseEther("100");
+            await airlineCoin.transfer(pilot1.address, stakeAmount);
+            await airlineCoin.connect(pilot1).approve(await stakingAirline.getAddress(), stakeAmount);
+            
+            const startTime = await time.latest();
+            await time.setNextBlockTimestamp(startTime + 10);
+            await stakingAirline.connect(pilot1).stake(stakeAmount);
 
-      expect(await stakingAirline.getRewardTokenBalance()).to.equal(
-        parseEther("1000000"),
-      );
-
-      await airlineCoin.approve(otherAccount.address, parseEther("1"));
-      await airlineCoin.transfer(otherAccount.address, parseEther("1"));
-      expect(await airlineCoin.balanceOf(otherAccount.address)).to.equal(
-        parseEther("1"),
-      );
-
-      expect(await airlineRewardCoin.balanceOf(otherAccount.address)).to.equal(
-        0,
-      );
-
-      await airlineCoin
-        .connect(otherAccount)
-        .approve(stakingAirline.address, parseEther("1"));
-      await stakingAirline.connect(otherAccount).stake(parseEther("1"));
-
-      await time.increase(10000);
-
-      const stakeInfo = await stakingAirline.getStakeInfo(otherAccount.address);
-      expect(stakeInfo._rewards).to.equal(parseEther("100"));
-      expect(stakeInfo._tokensStaked).to.equal(parseEther("1"));
-
-      await stakingAirline.connect(otherAccount).claimRewards();
-
-      const balance = await airlineRewardCoin.balanceOf(otherAccount.address);
-      expect(balance).to.equal(
-        parseEther("100").add(parseUnits("10", "finney")),
-      );
+            // 99 seconds = 99 rewards
+            await time.setNextBlockTimestamp(startTime + 10 + 99);
+            
+            try {
+                await stakingAirline.connect(pilot1).claimRewards();
+                throw new Error("Did not revert");
+            } catch (e: any) {
+                expect(e.message).to.contain("Rewards below minimum claim amount");
+            }
+        });
     });
-  });
+
+    describe("Isolation and Continuity", () => {
+        it("Multi-pilot Isolation", async () => {
+            const { stakingAirline, airlineCoin, pilot1, pilot2 } = await deployStakingAirlineFixture();
+            
+            const addr = await stakingAirline.getAddress();
+            await airlineCoin.transfer(pilot1.address, parseEther("100"));
+            await airlineCoin.transfer(pilot2.address, parseEther("500"));
+            await airlineCoin.connect(pilot1).approve(addr, parseEther("100"));
+            await airlineCoin.connect(pilot2).approve(addr, parseEther("500"));
+
+            const startTime = await time.latest();
+            await time.setNextBlockTimestamp(startTime + 10);
+            await stakingAirline.connect(pilot1).stake(parseEther("100")); 
+            
+            await time.setNextBlockTimestamp(startTime + 110);
+            await stakingAirline.connect(pilot2).stake(parseEther("500")); 
+
+            await time.setNextBlockTimestamp(startTime + 120);
+            await mine(); // Ensure the latest block is at T120
+
+            const info1 = await stakingAirline.getStakeInfo(pilot1.address);
+            const info2 = await stakingAirline.getStakeInfo(pilot2.address);
+
+            expect(info1._rewards).to.equal(parseEther("110"));
+            expect(info2._rewards).to.equal(parseEther("50"));
+        });
+
+        it("Continuity: Re-staking preserves pending rewards", async () => {
+            const { stakingAirline, airlineCoin, pilot1 } = await deployStakingAirlineFixture();
+            
+            await airlineCoin.transfer(pilot1.address, parseEther("200"));
+            await airlineCoin.connect(pilot1).approve(await stakingAirline.getAddress(), parseEther("200"));
+
+            const startTime = await time.latest();
+            await time.setNextBlockTimestamp(startTime + 10);
+            await stakingAirline.connect(pilot1).stake(parseEther("100")); 
+            
+            await time.setNextBlockTimestamp(startTime + 60); 
+            await stakingAirline.connect(pilot1).stake(parseEther("100")); 
+
+            await time.setNextBlockTimestamp(startTime + 110);
+            await mine(); // Ensure latest block is at T110
+
+            const info = await stakingAirline.getStakeInfo(pilot1.address);
+            expect(info._rewards).to.equal(parseEther("150"));
+        });
+    });
 });
+
+

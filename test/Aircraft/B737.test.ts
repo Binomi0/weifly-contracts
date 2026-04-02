@@ -12,10 +12,10 @@ import {
   mintLicense,
   setClaimConditionsAircraft,
   setClaimConditionsLicense,
-} from "../../utils";
+} from "../../utils.js";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { parseUnits } from "ethers/lib/utils";
-import { AirlineCoin } from "../../typechain-types";
+import { AirlineCoin } from "../../typechain-types/index.js";
 
 describe("Aircraft Boeing 737", async function () {
   async function deployContracts() {

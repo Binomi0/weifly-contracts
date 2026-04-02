@@ -12,7 +12,7 @@ import {
   mintLicense,
   setClaimConditionsAircraft,
   setClaimConditionsLicense,
-} from "../../utils";
+} from "../../utils.js";
 import { ethers } from "hardhat";
 
 describe("[AircraftNFT] Handle combustible", async () => {

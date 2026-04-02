@@ -8,10 +8,10 @@ import {
   lazyMintLicense,
   mintLicense,
   setClaimConditionsLicense,
-} from "../../utils";
+} from "../../utils.js";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { parseUnits } from "ethers/lib/utils";
-import { AirlineCoin } from "../../typechain-types";
+import { AirlineCoin } from "../../typechain-types/index.js";
 
 describe("License C NFT", async function () {
   async function deployContracts() {

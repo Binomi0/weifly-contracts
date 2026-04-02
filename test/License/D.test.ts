@@ -8,7 +8,7 @@ import {
   lazyMintLicense,
   mintLicense,
   setClaimConditionsLicense,
-} from "../../utils";
+} from "../../utils.js";
 
 describe("License D NFT", async function () {
   async function deployContracts() {

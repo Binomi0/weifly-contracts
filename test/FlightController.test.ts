@@ -11,9 +11,13 @@ import {
   mintLicense,
   setClaimConditionsAircraft,
   setClaimConditionsLicense,
-} from "../utils";
+} from "../utils.js";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { AircraftNFT, AirlineCoin, LicenseNFT } from "../typechain-types";
+import {
+  AircraftNFT,
+  AirlineCoin,
+  LicenseNFT,
+} from "../typechain-types/index.js";
 import { parseUnits } from "ethers/lib/utils";
 import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 

@@ -12,7 +12,7 @@ import {
   mintLicense,
   setClaimConditionsAircraft,
   setClaimConditionsLicense,
-} from "../../utils";
+} from "../../utils.js";
 
 describe("Aircraft Cessna 172", async function () {
   async function deployContracts() {

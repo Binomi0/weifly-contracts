@@ -4,14 +4,18 @@ import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { parseEther } from "ethers/lib/utils";
-import { PackedUserOperationStruct } from "../../typechain-types/@account-abstraction/contracts/core/EntryPoint";
-import { fillUserOp, fillUserOpDefaults, packUserOp } from "../../utils/UserOp";
+import { PackedUserOperationStruct } from "../../typechain-types/@account-abstraction/contracts/core/EntryPoint.js";
+import {
+  fillUserOp,
+  fillUserOpDefaults,
+  packUserOp,
+} from "../../utils/UserOp.js";
 import {
   getBaseInitCode,
   getSender,
   getUserOp,
   signUserOp,
-} from "../../utils/testutils";
+} from "../../utils/testutils.js";
 
 describe("[BaseAccount]", () => {
   async function deploy() {

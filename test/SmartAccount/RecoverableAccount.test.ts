@@ -4,7 +4,7 @@ import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { AccountFactory, EntryPoint } from "../../typechain-types";
+import { AccountFactory, EntryPoint } from "../../typechain-types/index.js";
 import { arrayify, id, parseEther } from "ethers/lib/utils";
 import { BigNumber } from "ethers";
 import {
@@ -12,10 +12,10 @@ import {
   getSender,
   getUserOp,
   signUserOp,
-} from "../../utils/testutils";
-import { fillUserOp, packUserOp } from "../../utils/UserOp";
-import { UserOperation } from "../../utils/UserOperation";
-import { PackedUserOperationStruct } from "../../typechain-types/@account-abstraction/contracts/core/EntryPoint";
+} from "../../utils/testutils.js";
+import { fillUserOp, packUserOp } from "../../utils/UserOp.js";
+import { UserOperation } from "../../utils/UserOperation.js";
+import { PackedUserOperationStruct } from "../../typechain-types/@account-abstraction/contracts/core/EntryPoint.js";
 
 describe("[RecoverableAccount]", () => {
   async function deploy() {

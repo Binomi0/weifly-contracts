@@ -31,8 +31,16 @@ contract AircraftNFT is ERC1155Drop {
     /*                                EVENTS & ERRORS                               */
     /* -------------------------------------------------------------------------- */
 
-    event GasSent(address indexed to, uint256 indexed aircraftId, uint256 amount);
-    event GasBurned(address indexed holder, uint256 indexed aircraftId, uint256 amount);
+    event GasSent(
+        address indexed to,
+        uint256 indexed aircraftId,
+        uint256 amount
+    );
+    event GasBurned(
+        address indexed holder,
+        uint256 indexed aircraftId,
+        uint256 amount
+    );
 
     /* -------------------------------------------------------------------------- */
     /*                                CONSTRUCTOR                                  */
@@ -97,7 +105,10 @@ contract AircraftNFT is ERC1155Drop {
     /*                           REQ. LICENSE MANAGEMENT                           */
     /* -------------------------------------------------------------------------- */
 
-    function setRequiredLicense(uint256 licenseIndex, uint256 licenseId) external onlyOwner {
+    function setRequiredLicense(
+        uint256 licenseIndex,
+        uint256 licenseId
+    ) external onlyOwner {
         requiredLicense[licenseIndex] = licenseId;
     }
 
@@ -135,11 +146,7 @@ contract AircraftNFT is ERC1155Drop {
         string memory _model,
         string memory _licenseType,
         uint256 _price
-    )
-        external
-        onlyOwner
-        returns (string memory metadataURI)
-    {
+    ) external onlyOwner returns (string memory metadataURI) {
         require(!_exists(_tokenId), "Aircraft already minted");
 
         // Store metadata
@@ -177,8 +184,11 @@ contract AircraftNFT is ERC1155Drop {
     /*                                 SETTERS (ADMIN)                            */
     /* -------------------------------------------------------------------------- */
 
-    function setAircraftData(uint256 _tokenId, AircraftData memory _data) external onlyOwner {
-        require(!_exists(_tokenId), "Aircraft already minted");
+    function setAircraftData(
+        uint256 _tokenId,
+        AircraftData memory _data
+    ) external onlyOwner {
+        require(_exists(_tokenId), "Aircraft does not exist");
         _aircrafts[_tokenId] = _data;
     }
 
@@ -186,8 +196,13 @@ contract AircraftNFT is ERC1155Drop {
     /*                           METADATA (TOKEN URI)                              */
     /* -------------------------------------------------------------------------- */
 
-    function tokenURI(uint256 _tokenId) public view virtual override returns (string memory) {
-        require(_exists(_tokenId), "ERC1155Metadata: URI query for nonexistent token");
+    function tokenURI(
+        uint256 _tokenId
+    ) public view virtual returns (string memory) {
+        require(
+            _exists(_tokenId),
+            "ERC1155Metadata: URI query for nonexistent token"
+        );
 
         AircraftData storage aircraft = _aircrafts[_tokenId];
         bytes32 hash = keccak256(
@@ -224,7 +239,7 @@ contract AircraftNFT is ERC1155Drop {
             "Insufficient contract gas balance"
         );
         require(
-            balanceOf(_holder, _aircraftId) > 0,
+            this.balanceOf(_holder, _aircraftId) > 0,
             "Holder does not own this aircraft"
         );
 
@@ -251,7 +266,7 @@ contract AircraftNFT is ERC1155Drop {
         );
 
         gasBalance[_holder][_aircraftId] -= _amount;
-        airlineGasCoin.burn(_amount);   // Assumes contract has minter/burner role
+        airlineGasCoin.burn(_amount); // Assumes contract has minter/burner role
         emit GasBurned(_holder, _aircraftId, _amount);
     }
 
@@ -272,7 +287,7 @@ contract AircraftNFT is ERC1155Drop {
         bytes memory _data
     ) internal view virtual override {
         // Ensure the token has been lazy‑minted
-        require(_tokenId < nextTokenIdToLazyMint(), "Token not minted yet");
+        require(_tokenId < nextTokenIdToLazyMint, "Token not minted yet");
 
         // Data must be non‑empty (custom validation)
         require(_data.length > 0, "Input data is empty");
@@ -304,7 +319,9 @@ contract AircraftNFT is ERC1155Drop {
     /**
      * @dev Converts a bytes32 to a hex string (without 0x).
      */
-    function bytes32ToHexString(bytes32 data) internal pure returns (string memory) {
+    function bytes32ToHexString(
+        bytes32 data
+    ) internal pure returns (string memory) {
         bytes memory alphabet = "0123456789abcdef";
         bytes memory str = new bytes(64);
         for (uint i = 0; i < 32; i++) {

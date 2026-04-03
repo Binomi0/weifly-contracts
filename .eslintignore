@@ -1,0 +1,10 @@
+node_modules/
+artifacts/
+cache/
+build-info/
+coverage/
+dist/
+coverage.json
+.next/
+.vscode/
+/.husky/

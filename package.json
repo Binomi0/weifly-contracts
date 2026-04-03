@@ -6,6 +6,8 @@
     "test": "hardhat test",
     "clean": "hardhat clean",
     "prettier": "prettier -w contracts scripts test",
+    "lint": "eslint --ext .ts,.js --ignore-path .eslintignore .",
+    "lint:fix": "eslint --ext .ts,.js --ignore-path .eslintignore . --fix",
     "compile": "hardhat compile",
     "build": "hardhat build",
     "deploy": "hardhat deploy",
@@ -43,7 +45,14 @@
     "ts-node": "^10.9.2",
     "typechain": "^8.3.2",
     "typescript": "^6.0.2",
-    "viem": "^2.47.6"
+    "viem": "^2.47.6",
+    "eslint": "^8.46.0",
+    "@typescript-eslint/parser": "^6.6.0",
+    "@typescript-eslint/eslint-plugin": "^6.6.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.5",
+    "eslint-plugin-import": "^2.28.1",
+    "eslint-import-resolver-typescript": "^4.4.4"
   },
   "version": "0.0.0"
 }

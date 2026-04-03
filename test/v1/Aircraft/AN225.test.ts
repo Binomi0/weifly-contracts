@@ -75,14 +75,9 @@ describe("Aircraft Antonov AN225", async function () {
     const airlineCoinAddress = await airlineCoin.getAddress();
     const restrictedCalls = [
       () => aircraft.connect(otherAccount).setRequiredLicense(10, 3),
+      () => aircraft.connect(otherAccount).setAirlineCoin(airlineCoinAddress),
       () =>
-        aircraft
-          .connect(otherAccount)
-          .setAirlineCoin(airlineCoinAddress),
-      () =>
-        aircraft
-          .connect(otherAccount)
-          .setAirlineGasCoin(airlineCoinAddress),
+        aircraft.connect(otherAccount).setAirlineGasCoin(airlineCoinAddress),
     ];
 
     for (const call of restrictedCalls) {

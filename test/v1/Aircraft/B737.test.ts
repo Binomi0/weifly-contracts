@@ -75,14 +75,9 @@ describe("Aircraft Boeing 737", async function () {
     const airlineCoinAddress = await airlineCoin.getAddress();
     const restrictedCalls = [
       () => aircraft.connect(otherAccount).setRequiredLicense(10, 2),
+      () => aircraft.connect(otherAccount).setAirlineCoin(airlineCoinAddress),
       () =>
-        aircraft
-          .connect(otherAccount)
-          .setAirlineCoin(airlineCoinAddress),
-      () =>
-        aircraft
-          .connect(otherAccount)
-          .setAirlineGasCoin(airlineCoinAddress),
+        aircraft.connect(otherAccount).setAirlineGasCoin(airlineCoinAddress),
     ];
 
     for (const call of restrictedCalls) {

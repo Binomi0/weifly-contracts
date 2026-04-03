@@ -15,7 +15,7 @@ const ZERO_ADDRESS =
   "0x0000000000000000000000000000000000000000000000000000000000000000";
 export async function deployAirlineCoin(owner: string) {
   const AirlineCoin = await ethers.getContractFactory("AirlineCoin");
-  const airlineCoin = await AirlineCoin.deploy(owner, "Airline Coin", "AIRL");
+  const airlineCoin = await AirlineCoin.deploy(owner);
   await airlineCoin.waitForDeployment();
 
   return airlineCoin;

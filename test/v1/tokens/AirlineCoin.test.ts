@@ -1,7 +1,9 @@
-import { time, loadFixture } from "@nomicfoundation/hardhat-network-helpers";
-import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
+import hre from "hardhat";
 import { expect } from "chai";
-import { ethers } from "hardhat";
+import { describe, it } from "node:test";
+import { parseEther } from "ethers";
+
+const { ethers } = await hre.network.connect();
 
 describe("AirlineCoin", function () {
   async function deployAirlineCoin() {
@@ -11,26 +13,22 @@ describe("AirlineCoin", function () {
     const [owner, otherAccount] = await ethers.getSigners();
     const lockedAmount = ONE_MILLION;
     const AirlineCoin = await ethers.getContractFactory("AirlineCoin");
-    const airlineCoin = await AirlineCoin.deploy(
-      owner.address,
-      "Airline Coin",
-      "AIRL",
-    );
+    const airlineCoin = await AirlineCoin.deploy(owner.address);
 
     return { airlineCoin, owner, otherAccount, lockedAmount };
   }
 
   it("Should set the right owner", async function () {
-    const { airlineCoin, owner } = await loadFixture(deployAirlineCoin);
+    const { airlineCoin, owner } = await deployAirlineCoin();
 
     expect(await airlineCoin.owner()).to.equal(owner.address);
   });
 
   it("Should receive and store the funds", async function () {
-    const { airlineCoin, owner } = await loadFixture(deployAirlineCoin);
+    const { airlineCoin, owner } = await deployAirlineCoin();
 
     expect(await airlineCoin.balanceOf(owner.address)).to.equal(
-      ethers.utils.parseEther("1000000"),
+      parseEther("1000000"),
     );
   });
 });

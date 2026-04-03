@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es2020",
+    "target": "esnext",
     "module": "nodenext",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
@@ -18,6 +18,9 @@
       ],
       "@artifacts/*": [
         "./artifacts/*"
+      ],
+      "@types/*": [
+        "./types/*"
       ]
     },
     "moduleResolution": "nodenext",

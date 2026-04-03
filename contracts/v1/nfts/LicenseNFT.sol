@@ -8,7 +8,6 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
-
 /// @title LicenseNFT - NFT de licencias de vuelo N1-N4
 /// @notice Contrato ERC-721 simplificado y seguro para licencias de piloto
 contract LicenseNFT is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {

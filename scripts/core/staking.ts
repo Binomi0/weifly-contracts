@@ -1,12 +1,8 @@
-import { ethers } from "hardhat";
-import { parseUnits } from "ethers/lib/utils";
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import {
   AirlineCoin,
   AirlineRewardCoin,
   NativeTokenWrapper,
-} from "../../typechain-types";
-import { time } from "@nomicfoundation/hardhat-network-helpers";
+} from "@types/index.js";
 
 const handleError = (err: unknown) => {
   const { error } = err as { error: Error };
@@ -14,7 +10,7 @@ const handleError = (err: unknown) => {
 };
 
 const deployStaking = async (
-  accounts: SignerWithAddress[],
+  accounts,
   airLine: AirlineCoin,
   airLineReward: AirlineRewardCoin,
   nativeTokenWrapper: NativeTokenWrapper,

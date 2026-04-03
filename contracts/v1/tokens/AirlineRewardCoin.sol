@@ -10,6 +10,6 @@ contract AirlineRewardCoin is ERC20Base {
         string memory _symbol
     ) ERC20Base(_defaultAdmin, _name, _symbol) {
         // 1 thousand millions + 18 decimals
-        mintTo(address(msg.sender), 1_000_000_000_000_000_000_000_000_000);
+        mintTo(_defaultAdmin, 1_000_000_000_000_000_000_000_000_000);
     }
 }

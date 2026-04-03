@@ -7,8 +7,9 @@ import {
   deployAirlineCoin,
   deployAirlineRewardCoin,
   deployLicenseNFT,
-} from "../../utils.js";
+} from "../../../utils.js";
 import { parseEther } from "ethers";
+import { AircraftNFT$Type } from "../../../artifacts/contracts/v1/nfts/AircraftNft.sol/artifacts.js";
 
 const net = hre as HardhatRuntimeEnvironment;
 const { ethers, networkHelpers } = await net.network.connect();

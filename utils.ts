@@ -8,11 +8,11 @@ import {
   encodeBytes32String,
   getBytes,
 } from "ethers";
-import { LicenseNFT } from "./typechain-types/contracts/core/nfts/LicenseNFT.js";
-import { AirlineCoin } from "./typechain-types/contracts/core/tokens/AirlineCoin.js";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { AircraftNFT } from "./typechain-types/contracts/core/nfts/AircraftNft.sol/AircraftNFT.js";
+import { LicenseNFT } from "./typechain-types/contracts/v1/nfts/LicenseNFT";
+import { AirlineCoin } from "@artifacts/contracts/v1/tokens/AirlineCoin.sol";
+import { AircraftNFT } from "@artifacts/contracts/v1/nfts/AircraftNft.sol";
 
 const ZERO_ADDRESS =
   "0x0000000000000000000000000000000000000000000000000000000000000000";
@@ -53,7 +53,7 @@ export async function deployFlightController(
   return flightController;
 }
 
-export async function deployLicenseNFT(owner: string) {
+export async function deployLicenseNFT(owner: string): Promise<LicenseNFT> {
   const License = await ethers.getContractFactory("LicenseNFT");
   const license = await License.deploy("License", "AIRC");
   await license.waitForDeployment();
@@ -65,8 +65,8 @@ export async function deployLicenseNFT(owner: string) {
 export async function deployAircraftNFT(
   owner: HardhatEthersSigner,
   licenseAddress: string,
-) {
-  const Aircraft = await ethers.getContractFactory("AircraftNFT");
+): Promise<AircraftNFT> {
+  const Aircraft: AircraftNFT = await ethers.getContractFactory("AircraftNFT");
   const aircraft = await Aircraft.deploy(
     owner.address,
     "Aircraft",

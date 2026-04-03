@@ -3,6 +3,11 @@ import { expect } from "chai";
 import { describe, it } from "node:test";
 import { parseEther } from "ethers";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
+import { StakingAirline } from "@artifacts/contracts/v1/StakingAirline.sol";
+import { AirlineCoin } from "@artifacts/contracts/v1/tokens/AirlineCoin.sol";
+import { AirlineRewardCoin } from "@artifacts/contracts/v1/tokens/AirlineRewardCoin.sol";
+import { deployAirlineCoin } from "../../utils.js";
+import deployStaking from "@scripts/core/staking.js";
 
 const net = hre as HardhatRuntimeEnvironment;
 const { ethers, networkHelpers } = await net.network.connect();
@@ -13,8 +18,8 @@ describe("StakingAirline: Production Tests", async () => {
   async function deployStakingAirlineFixture() {
     const [owner, pilot1, pilot2] = await ethers.getSigners();
 
-    const AirlineCoin = await ethers.getContractFactory("AirlineCoin");
-    const StakingAirline = await ethers.getContractFactory("StakingAirline");
+    const airlineCoin = await deployAirlineCoin(owner.address);
+    const StakingAirline = await deployStaking(owner.address);
     const AirlineRewardCoin =
       await ethers.getContractFactory("AirlineRewardCoin");
     const NativeTokenWrapper =
@@ -25,18 +30,14 @@ describe("StakingAirline: Production Tests", async () => {
       "WETH",
       "WETH",
     );
-    const airlineCoin = await AirlineCoin.deploy(
-      owner.address,
-      "Airline Coin",
-      "AIRL",
-    );
-    const airlineRewardCoin = await AirlineRewardCoin.deploy(
+
+    const airlineRewardCoin: AirlineRewardCoin = await AirlineRewardCoin.deploy(
       owner.address,
       "Reward Coin",
       "AIRG",
     );
 
-    const stakingAirline = await StakingAirline.deploy(
+    const stakingAirline: StakingAirline = await StakingAirline.deploy(
       1n,
       owner.address,
       1n,

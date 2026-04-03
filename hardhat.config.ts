@@ -4,11 +4,16 @@ import hardhatViem from "@nomicfoundation/hardhat-viem";
 import hardhatViemAssertions from "@nomicfoundation/hardhat-viem-assertions";
 import hardhatNodeTestRunner from "@nomicfoundation/hardhat-node-test-runner";
 import hardhatNetworkHelpers from "@nomicfoundation/hardhat-network-helpers";
+import hardhatTypechain from "@nomicfoundation/hardhat-typechain";
 
 const config: HardhatUserConfig = {
+  typechain: {
+    outDir: "./types",
+  },
   plugins: [
     hardhatEthers,
     hardhatViem,
+    hardhatTypechain,
     hardhatViemAssertions,
     hardhatNodeTestRunner,
     hardhatNetworkHelpers,

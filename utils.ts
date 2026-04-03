@@ -10,9 +10,6 @@ import {
 } from "ethers";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { LicenseNFT } from "./typechain-types/contracts/v1/nfts/LicenseNFT";
-import { AirlineCoin } from "@artifacts/contracts/v1/tokens/AirlineCoin.sol";
-import { AircraftNFT } from "@artifacts/contracts/v1/nfts/AircraftNft.sol";
 
 const ZERO_ADDRESS =
   "0x0000000000000000000000000000000000000000000000000000000000000000";

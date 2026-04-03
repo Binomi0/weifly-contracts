@@ -33,6 +33,9 @@ importers:
       '@nomicfoundation/hardhat-node-test-runner':
         specifier: ^3.0.12
         version: 3.0.12(hardhat@3.2.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))
+      '@nomicfoundation/hardhat-typechain':
+        specifier: ^3.0.5
+        version: 3.0.5(@nomicfoundation/hardhat-ethers@4.0.6(bufferutil@4.1.0)(hardhat@3.2.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(utf-8-validate@6.0.6))(ethers@6.16.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(hardhat@3.2.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(typescript@6.0.2)
       '@nomicfoundation/hardhat-viem':
         specifier: ^3.0.4
         version: 3.0.4(hardhat@3.2.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(viem@2.47.6(bufferutil@4.1.0)(typescript@6.0.2)(utf-8-validate@6.0.6)(zod@3.25.76))
@@ -473,6 +476,9 @@ packages:
       ethers: ^6.14.0
       hardhat: ^2.26.0
 
+  '@nomicfoundation/hardhat-errors@3.0.10':
+    resolution: {integrity: sha512-jfQ75/t21674cIQPbQmzRSY8YdusvQhKMsT+IGEoXlJuAzw+ngWsD7y7nHT8UKQ+liHWgMA+Am2843KwP0KtiA==}
+
   '@nomicfoundation/hardhat-errors@3.0.9':
     resolution: {integrity: sha512-qwKMpPsTI0q2Q5w3SKh231WZZPyCHjUvlbUivAn8zNeQ7ko59nBqWoiwMNRuq4F0zVaO1XZ3863R8HwyNd/n0A==}
 
@@ -494,8 +500,18 @@ packages:
     peerDependencies:
       hardhat: ^3.2.0
 
+  '@nomicfoundation/hardhat-typechain@3.0.5':
+    resolution: {integrity: sha512-IMC9J3WVOI8oAFcDfX76KSHEa1/AWzktPwpDDM0fWxF6cKVlA4ldYO5Ym943FUhHgHfDbVgU9d5GjPPx9a6mdQ==}
+    peerDependencies:
+      '@nomicfoundation/hardhat-ethers': ^4.0.0
+      ethers: ^6.14.0
+      hardhat: ^3.1.11
+
   '@nomicfoundation/hardhat-utils@4.0.1':
     resolution: {integrity: sha512-9xxD6WXLn+kopd+hmF+XYcJJ38Gm06QmZxKf/fIJzlzs9FuNI6C7Lvdd4qHv8/3ReegIbpBCrzozaL2GISmNrA==}
+
+  '@nomicfoundation/hardhat-utils@4.0.2':
+    resolution: {integrity: sha512-6lK0+9ygB7wGDlu11DAmTuZxhnoGbyGZC2aRaKKehW0vDNTS9iT7GUimgVvlO3B23E/HwwRKOOLmSVPC4qmmQw==}
 
   '@nomicfoundation/hardhat-vendored@3.0.1':
     resolution: {integrity: sha512-jBOAqmEAMJ8zdfiQmTLV+c0IaSyySqkDSJ9spTy8Ts/m/mO8w364TClyfn+p4ZpxBjyX4LMa3NfC402hoDtwCg==}
@@ -1726,7 +1742,7 @@ packages:
       hardhat: ^2.11.0
 
   source-map@0.2.0:
-    resolution: {integrity: sha1-2rc/vPwrqBm03gO9b26qSBZLP50=}
+    resolution: {integrity: sha512-CBdZ2oa/BHhS4xj5DlhjWNHcan57/5YuvfdLf17iVmIpd9KRm+DFLmC6nBNj+6Ua7Kt3TmOjDpQT1aTYOQtoUA==}
     engines: {node: '>=0.8.0'}
 
   source-map@0.6.1:
@@ -2412,6 +2428,12 @@ snapshots:
       hardhat: 3.2.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)
       ordinal: 1.0.3
 
+  '@nomicfoundation/hardhat-errors@3.0.10':
+    dependencies:
+      '@nomicfoundation/hardhat-utils': 4.0.2
+    transitivePeerDependencies:
+      - supports-color
+
   '@nomicfoundation/hardhat-errors@3.0.9':
     dependencies:
       '@nomicfoundation/hardhat-utils': 4.0.1
@@ -2457,7 +2479,36 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@nomicfoundation/hardhat-typechain@3.0.5(@nomicfoundation/hardhat-ethers@4.0.6(bufferutil@4.1.0)(hardhat@3.2.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(utf-8-validate@6.0.6))(ethers@6.16.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(hardhat@3.2.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(typescript@6.0.2)':
+    dependencies:
+      '@nomicfoundation/hardhat-errors': 3.0.10
+      '@nomicfoundation/hardhat-ethers': 4.0.6(bufferutil@4.1.0)(hardhat@3.2.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(utf-8-validate@6.0.6)
+      '@nomicfoundation/hardhat-utils': 4.0.2
+      '@nomicfoundation/hardhat-zod-utils': 3.0.3(zod@3.25.76)
+      '@typechain/ethers-v6': 0.5.1(ethers@6.16.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(typechain@8.3.2(typescript@6.0.2))(typescript@6.0.2)
+      debug: 4.4.3(supports-color@8.1.1)
+      ethers: 6.16.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)
+      hardhat: 3.2.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)
+      typechain: 8.3.2(typescript@6.0.2)
+      zod: 3.25.76
+    transitivePeerDependencies:
+      - supports-color
+      - typescript
+
   '@nomicfoundation/hardhat-utils@4.0.1':
+    dependencies:
+      '@streamparser/json-node': 0.0.22
+      debug: 4.4.3(supports-color@8.1.1)
+      env-paths: 2.2.1
+      ethereum-cryptography: 2.2.1
+      fast-equals: 5.4.0
+      json-stream-stringify: 3.1.6
+      rfdc: 1.4.1
+      undici: 6.24.1
+    transitivePeerDependencies:
+      - supports-color
+
+  '@nomicfoundation/hardhat-utils@4.0.2':
     dependencies:
       '@streamparser/json-node': 0.0.22
       debug: 4.4.3(supports-color@8.1.1)

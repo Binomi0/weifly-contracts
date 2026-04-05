@@ -11,6 +11,10 @@ import {
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 
+import { licenses } from "./contants.js";
+
+import { AirlineCoin, LicenseNFT } from "@types/index.js";
+
 const ZERO_ADDRESS =
   "0x0000000000000000000000000000000000000000000000000000000000000000";
 export async function deployAirlineCoin(owner: string) {
@@ -50,7 +54,7 @@ export async function deployFlightController(
   return flightController;
 }
 
-export async function deployLicenseNFT(owner: string): Promise<LicenseNFT> {
+export async function deployLicenseNFT() {
   const License = await ethers.getContractFactory("LicenseNFT");
   const license = await License.deploy("License", "AIRC");
   await license.waitForDeployment();
@@ -62,8 +66,8 @@ export async function deployLicenseNFT(owner: string): Promise<LicenseNFT> {
 export async function deployAircraftNFT(
   owner: HardhatEthersSigner,
   licenseAddress: string,
-): Promise<AircraftNFT> {
-  const Aircraft: AircraftNFT = await ethers.getContractFactory("AircraftNFT");
+) {
+  const Aircraft = await ethers.getContractFactory("AircraftNFT");
   const aircraft = await Aircraft.deploy(
     owner.address,
     "Aircraft",
@@ -81,7 +85,7 @@ export async function deployAircraftNFT(
 
 export async function setClaimConditionsLicense(
   license: LicenseNFT,
-  tokenId: number,
+  tokenId: bigint,
   airlineCoin: AirlineCoin,
 ) {
   await license.setClaimConditions(
@@ -89,7 +93,7 @@ export async function setClaimConditionsLicense(
     {
       currency: airlineCoin.getAddress(),
       maxClaimableSupply: 100,
-      metadata: JSON.stringify(tokenId),
+      metadata: JSON.stringify(tokenId.toString()),
       startTimestamp: await networkHelpers.time.latest(),
       quantityLimitPerWallet: 1,
       pricePerToken: parseUnits(licenses[tokenId].price.toString(), "ether"),
@@ -133,7 +137,7 @@ export async function mintLicense(
 
 export async function lazyMintLicense(
   _amount: string,
-  tokenId: number,
+  tokenId: bigint,
   owner: HardhatEthersSigner,
   license: LicenseNFT,
 ) {

@@ -1,7 +1,8 @@
-import hre from "hardhat";
-import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { expect } from "chai";
 import { describe, it } from "node:test";
+
+import hre from "hardhat";
+import { expect } from "chai";
+
 import {
   deployAircraftNFT,
   deployAirlineCoin,
@@ -9,8 +10,7 @@ import {
   deployLicenseNFT,
 } from "../../../utils.js";
 
-const net = hre as HardhatRuntimeEnvironment;
-const { ethers, networkHelpers } = await net.network.connect();
+const { ethers, networkHelpers } = await hre.network.connect();
 
 describe("Aircraft Antonov AN225", async function () {
   async function deployFixture() {
@@ -83,7 +83,7 @@ describe("Aircraft Antonov AN225", async function () {
     for (const call of restrictedCalls) {
       try {
         await call();
-      } catch (e: any) {
+      } catch (e: unknown) {
         // Expected revert
       }
     }

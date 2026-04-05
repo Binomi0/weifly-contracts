@@ -4,68 +4,51 @@
 import type { BaseContract, BigNumberish, BytesLike, FunctionFragment, Result, Interface, EventFragment, AddressLike, ContractRunner, ContractMethod, Listener } from "ethers"
 import type { TypedContractEvent, TypedDeferredTopicFilter, TypedEventLog, TypedLogDescription, TypedListener, TypedContractMethod } from "../../common.js"
   
-export declare namespace LicenseNFT {
-      
-    export type LicenseInfoStruct = {licenseType: string, level: BigNumberish, pilot: AddressLike, flightHours: BigNumberish, isVerified: boolean, mintTime: BigNumberish}
-
-    export type LicenseInfoStructOutput = [licenseType: string, level: bigint, pilot: string, flightHours: bigint, isVerified: boolean, mintTime: bigint] & {licenseType: string, level: bigint, pilot: string, flightHours: bigint, isVerified: boolean, mintTime: bigint }
-  
-    }
 
   export interface LicenseNFTInterface extends Interface {
-    getFunction(nameOrSignature: "approve" | "balanceOf" | "burnLicense" | "getAllLicenses" | "getApproved" | "getLicenseInfo" | "isApprovedForAll" | "mintLicense" | "name" | "owner" | "ownerOf" | "parseLicenseLevel" | "renounceOwnership" | "royaltyInfo" | "safeTransferFrom(address,address,uint256)" | "safeTransferFrom(address,address,uint256,bytes)" | "setApprovalForAll" | "supportsInterface" | "symbol" | "tokenByIndex" | "tokenOfOwnerByIndex" | "tokenURI" | "totalSupply" | "transferFrom" | "transferOwnership"): FunctionFragment;
+    getFunction(nameOrSignature: "approve" | "balanceOf" | "burnLicense" | "getApproved" | "isApprovedForAll" | "lazyMint" | "mintLicense" | "name" | "owner" | "ownerOf" | "parseLicenseLevel" | "renounceOwnership" | "safeTransferFrom(address,address,uint256)" | "safeTransferFrom(address,address,uint256,bytes)" | "setApprovalForAll" | "supportsInterface" | "symbol" | "tokenURI" | "transferFrom" | "transferOwnership"): FunctionFragment;
 
-    getEvent(nameOrSignatureOrTopic: "Approval" | "ApprovalForAll" | "BatchMetadataUpdate" | "LicenseBurned" | "LicenseMinted" | "MetadataUpdate" | "OwnershipTransferred" | "Transfer"): EventFragment;
+    getEvent(nameOrSignatureOrTopic: "Approval" | "ApprovalForAll" | "BatchMetadataUpdate" | "MetadataUpdate" | "OwnershipTransferred" | "Transfer"): EventFragment;
 
     encodeFunctionData(functionFragment: 'approve', values: [AddressLike, BigNumberish]): string;
 encodeFunctionData(functionFragment: 'balanceOf', values: [AddressLike]): string;
-encodeFunctionData(functionFragment: 'burnLicense', values: [BigNumberish, string]): string;
-encodeFunctionData(functionFragment: 'getAllLicenses', values?: undefined): string;
+encodeFunctionData(functionFragment: 'burnLicense', values: [BigNumberish]): string;
 encodeFunctionData(functionFragment: 'getApproved', values: [BigNumberish]): string;
-encodeFunctionData(functionFragment: 'getLicenseInfo', values: [BigNumberish]): string;
 encodeFunctionData(functionFragment: 'isApprovedForAll', values: [AddressLike, AddressLike]): string;
-encodeFunctionData(functionFragment: 'mintLicense', values: [AddressLike, string, string]): string;
+encodeFunctionData(functionFragment: 'lazyMint', values: [AddressLike, BigNumberish, string]): string;
+encodeFunctionData(functionFragment: 'mintLicense', values: [AddressLike, BigNumberish, string]): string;
 encodeFunctionData(functionFragment: 'name', values?: undefined): string;
 encodeFunctionData(functionFragment: 'owner', values?: undefined): string;
 encodeFunctionData(functionFragment: 'ownerOf', values: [BigNumberish]): string;
 encodeFunctionData(functionFragment: 'parseLicenseLevel', values: [string]): string;
 encodeFunctionData(functionFragment: 'renounceOwnership', values?: undefined): string;
-encodeFunctionData(functionFragment: 'royaltyInfo', values: [BigNumberish, BigNumberish]): string;
 encodeFunctionData(functionFragment: 'safeTransferFrom(address,address,uint256)', values: [AddressLike, AddressLike, BigNumberish]): string;
 encodeFunctionData(functionFragment: 'safeTransferFrom(address,address,uint256,bytes)', values: [AddressLike, AddressLike, BigNumberish, BytesLike]): string;
 encodeFunctionData(functionFragment: 'setApprovalForAll', values: [AddressLike, boolean]): string;
 encodeFunctionData(functionFragment: 'supportsInterface', values: [BytesLike]): string;
 encodeFunctionData(functionFragment: 'symbol', values?: undefined): string;
-encodeFunctionData(functionFragment: 'tokenByIndex', values: [BigNumberish]): string;
-encodeFunctionData(functionFragment: 'tokenOfOwnerByIndex', values: [AddressLike, BigNumberish]): string;
 encodeFunctionData(functionFragment: 'tokenURI', values: [BigNumberish]): string;
-encodeFunctionData(functionFragment: 'totalSupply', values?: undefined): string;
 encodeFunctionData(functionFragment: 'transferFrom', values: [AddressLike, AddressLike, BigNumberish]): string;
 encodeFunctionData(functionFragment: 'transferOwnership', values: [AddressLike]): string;
 
     decodeFunctionResult(functionFragment: 'approve', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'balanceOf', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'burnLicense', data: BytesLike): Result;
-decodeFunctionResult(functionFragment: 'getAllLicenses', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'getApproved', data: BytesLike): Result;
-decodeFunctionResult(functionFragment: 'getLicenseInfo', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'isApprovedForAll', data: BytesLike): Result;
+decodeFunctionResult(functionFragment: 'lazyMint', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'mintLicense', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'name', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'owner', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'ownerOf', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'parseLicenseLevel', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'renounceOwnership', data: BytesLike): Result;
-decodeFunctionResult(functionFragment: 'royaltyInfo', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'safeTransferFrom(address,address,uint256)', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'safeTransferFrom(address,address,uint256,bytes)', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'setApprovalForAll', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'supportsInterface', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'symbol', data: BytesLike): Result;
-decodeFunctionResult(functionFragment: 'tokenByIndex', data: BytesLike): Result;
-decodeFunctionResult(functionFragment: 'tokenOfOwnerByIndex', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'tokenURI', data: BytesLike): Result;
-decodeFunctionResult(functionFragment: 'totalSupply', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'transferFrom', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'transferOwnership', data: BytesLike): Result;
   }
@@ -99,30 +82,6 @@ decodeFunctionResult(functionFragment: 'transferOwnership', data: BytesLike): Re
       export type InputTuple = [_fromTokenId: BigNumberish, _toTokenId: BigNumberish];
       export type OutputTuple = [_fromTokenId: bigint, _toTokenId: bigint];
       export interface OutputObject {_fromTokenId: bigint, _toTokenId: bigint };
-      export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>
-      export type Filter = TypedDeferredTopicFilter<Event>
-      export type Log = TypedEventLog<Event>
-      export type LogDescription = TypedLogDescription<Event>
-    }
-
-  
-
-    export namespace LicenseBurnedEvent {
-      export type InputTuple = [tokenId: BigNumberish, reason: string];
-      export type OutputTuple = [tokenId: bigint, reason: string];
-      export interface OutputObject {tokenId: bigint, reason: string };
-      export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>
-      export type Filter = TypedDeferredTopicFilter<Event>
-      export type Log = TypedEventLog<Event>
-      export type LogDescription = TypedLogDescription<Event>
-    }
-
-  
-
-    export namespace LicenseMintedEvent {
-      export type InputTuple = [tokenId: BigNumberish, licenseType: string, pilot: AddressLike, quantity: BigNumberish];
-      export type OutputTuple = [tokenId: bigint, licenseType: string, pilot: string, quantity: bigint];
-      export interface OutputObject {tokenId: bigint, licenseType: string, pilot: string, quantity: bigint };
       export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>
       export type Filter = TypedDeferredTopicFilter<Event>
       export type Log = TypedEventLog<Event>
@@ -218,17 +177,9 @@ decodeFunctionResult(functionFragment: 'transferOwnership', data: BytesLike): Re
 
     
     burnLicense: TypedContractMethod<
-      [tokenId: BigNumberish, reason: string, ],
+      [tokenId: BigNumberish, ],
       [void],
       'nonpayable'
-    >
-    
-
-    
-    getAllLicenses: TypedContractMethod<
-      [],
-      [bigint[]],
-      'view'
     >
     
 
@@ -236,14 +187,6 @@ decodeFunctionResult(functionFragment: 'transferOwnership', data: BytesLike): Re
     getApproved: TypedContractMethod<
       [tokenId: BigNumberish, ],
       [string],
-      'view'
-    >
-    
-
-    
-    getLicenseInfo: TypedContractMethod<
-      [tokenId: BigNumberish, ],
-      [LicenseNFT.LicenseInfoStructOutput],
       'view'
     >
     
@@ -257,8 +200,16 @@ decodeFunctionResult(functionFragment: 'transferOwnership', data: BytesLike): Re
     
 
     
+    lazyMint: TypedContractMethod<
+      [pilot: AddressLike, licenseType: BigNumberish, metadata: string, ],
+      [bigint],
+      'nonpayable'
+    >
+    
+
+    
     mintLicense: TypedContractMethod<
-      [pilot: AddressLike, licenseType: string, metadata: string, ],
+      [pilot: AddressLike, licenseType: BigNumberish, metadata: string, ],
       [bigint],
       'nonpayable'
     >
@@ -305,14 +256,6 @@ decodeFunctionResult(functionFragment: 'transferOwnership', data: BytesLike): Re
     
 
     
-    royaltyInfo: TypedContractMethod<
-      [arg0: BigNumberish, arg1: BigNumberish, ],
-      [[string, bigint]],
-      'view'
-    >
-    
-
-    
     "safeTransferFrom(address,address,uint256)": TypedContractMethod<
       [from: AddressLike, to: AddressLike, tokenId: BigNumberish, ],
       [void],
@@ -353,33 +296,9 @@ decodeFunctionResult(functionFragment: 'transferOwnership', data: BytesLike): Re
     
 
     
-    tokenByIndex: TypedContractMethod<
-      [index: BigNumberish, ],
-      [bigint],
-      'view'
-    >
-    
-
-    
-    tokenOfOwnerByIndex: TypedContractMethod<
-      [owner: AddressLike, index: BigNumberish, ],
-      [bigint],
-      'view'
-    >
-    
-
-    
     tokenURI: TypedContractMethod<
       [tokenId: BigNumberish, ],
       [string],
-      'view'
-    >
-    
-
-    
-    totalSupply: TypedContractMethod<
-      [],
-      [bigint],
       'view'
     >
     
@@ -414,23 +333,13 @@ getFunction(nameOrSignature: 'balanceOf'): TypedContractMethod<
       'view'
     >;
 getFunction(nameOrSignature: 'burnLicense'): TypedContractMethod<
-      [tokenId: BigNumberish, reason: string, ],
+      [tokenId: BigNumberish, ],
       [void],
       'nonpayable'
-    >;
-getFunction(nameOrSignature: 'getAllLicenses'): TypedContractMethod<
-      [],
-      [bigint[]],
-      'view'
     >;
 getFunction(nameOrSignature: 'getApproved'): TypedContractMethod<
       [tokenId: BigNumberish, ],
       [string],
-      'view'
-    >;
-getFunction(nameOrSignature: 'getLicenseInfo'): TypedContractMethod<
-      [tokenId: BigNumberish, ],
-      [LicenseNFT.LicenseInfoStructOutput],
       'view'
     >;
 getFunction(nameOrSignature: 'isApprovedForAll'): TypedContractMethod<
@@ -438,8 +347,13 @@ getFunction(nameOrSignature: 'isApprovedForAll'): TypedContractMethod<
       [boolean],
       'view'
     >;
+getFunction(nameOrSignature: 'lazyMint'): TypedContractMethod<
+      [pilot: AddressLike, licenseType: BigNumberish, metadata: string, ],
+      [bigint],
+      'nonpayable'
+    >;
 getFunction(nameOrSignature: 'mintLicense'): TypedContractMethod<
-      [pilot: AddressLike, licenseType: string, metadata: string, ],
+      [pilot: AddressLike, licenseType: BigNumberish, metadata: string, ],
       [bigint],
       'nonpayable'
     >;
@@ -468,11 +382,6 @@ getFunction(nameOrSignature: 'renounceOwnership'): TypedContractMethod<
       [void],
       'nonpayable'
     >;
-getFunction(nameOrSignature: 'royaltyInfo'): TypedContractMethod<
-      [arg0: BigNumberish, arg1: BigNumberish, ],
-      [[string, bigint]],
-      'view'
-    >;
 getFunction(nameOrSignature: 'safeTransferFrom(address,address,uint256)'): TypedContractMethod<
       [from: AddressLike, to: AddressLike, tokenId: BigNumberish, ],
       [void],
@@ -498,24 +407,9 @@ getFunction(nameOrSignature: 'symbol'): TypedContractMethod<
       [string],
       'view'
     >;
-getFunction(nameOrSignature: 'tokenByIndex'): TypedContractMethod<
-      [index: BigNumberish, ],
-      [bigint],
-      'view'
-    >;
-getFunction(nameOrSignature: 'tokenOfOwnerByIndex'): TypedContractMethod<
-      [owner: AddressLike, index: BigNumberish, ],
-      [bigint],
-      'view'
-    >;
 getFunction(nameOrSignature: 'tokenURI'): TypedContractMethod<
       [tokenId: BigNumberish, ],
       [string],
-      'view'
-    >;
-getFunction(nameOrSignature: 'totalSupply'): TypedContractMethod<
-      [],
-      [bigint],
       'view'
     >;
 getFunction(nameOrSignature: 'transferFrom'): TypedContractMethod<
@@ -532,8 +426,6 @@ getFunction(nameOrSignature: 'transferOwnership'): TypedContractMethod<
     getEvent(key: 'Approval'): TypedContractEvent<ApprovalEvent.InputTuple, ApprovalEvent.OutputTuple, ApprovalEvent.OutputObject>;
 getEvent(key: 'ApprovalForAll'): TypedContractEvent<ApprovalForAllEvent.InputTuple, ApprovalForAllEvent.OutputTuple, ApprovalForAllEvent.OutputObject>;
 getEvent(key: 'BatchMetadataUpdate'): TypedContractEvent<BatchMetadataUpdateEvent.InputTuple, BatchMetadataUpdateEvent.OutputTuple, BatchMetadataUpdateEvent.OutputObject>;
-getEvent(key: 'LicenseBurned'): TypedContractEvent<LicenseBurnedEvent.InputTuple, LicenseBurnedEvent.OutputTuple, LicenseBurnedEvent.OutputObject>;
-getEvent(key: 'LicenseMinted'): TypedContractEvent<LicenseMintedEvent.InputTuple, LicenseMintedEvent.OutputTuple, LicenseMintedEvent.OutputObject>;
 getEvent(key: 'MetadataUpdate'): TypedContractEvent<MetadataUpdateEvent.InputTuple, MetadataUpdateEvent.OutputTuple, MetadataUpdateEvent.OutputObject>;
 getEvent(key: 'OwnershipTransferred'): TypedContractEvent<OwnershipTransferredEvent.InputTuple, OwnershipTransferredEvent.OutputTuple, OwnershipTransferredEvent.OutputObject>;
 getEvent(key: 'Transfer'): TypedContractEvent<TransferEvent.InputTuple, TransferEvent.OutputTuple, TransferEvent.OutputObject>;
@@ -550,14 +442,6 @@ getEvent(key: 'Transfer'): TypedContractEvent<TransferEvent.InputTuple, Transfer
 
       'BatchMetadataUpdate(uint256,uint256)': TypedContractEvent<BatchMetadataUpdateEvent.InputTuple, BatchMetadataUpdateEvent.OutputTuple, BatchMetadataUpdateEvent.OutputObject>;
       BatchMetadataUpdate: TypedContractEvent<BatchMetadataUpdateEvent.InputTuple, BatchMetadataUpdateEvent.OutputTuple, BatchMetadataUpdateEvent.OutputObject>;
-    
-
-      'LicenseBurned(uint256,string)': TypedContractEvent<LicenseBurnedEvent.InputTuple, LicenseBurnedEvent.OutputTuple, LicenseBurnedEvent.OutputObject>;
-      LicenseBurned: TypedContractEvent<LicenseBurnedEvent.InputTuple, LicenseBurnedEvent.OutputTuple, LicenseBurnedEvent.OutputObject>;
-    
-
-      'LicenseMinted(uint256,string,address,uint256)': TypedContractEvent<LicenseMintedEvent.InputTuple, LicenseMintedEvent.OutputTuple, LicenseMintedEvent.OutputObject>;
-      LicenseMinted: TypedContractEvent<LicenseMintedEvent.InputTuple, LicenseMintedEvent.OutputTuple, LicenseMintedEvent.OutputObject>;
     
 
       'MetadataUpdate(uint256)': TypedContractEvent<MetadataUpdateEvent.InputTuple, MetadataUpdateEvent.OutputTuple, MetadataUpdateEvent.OutputObject>;

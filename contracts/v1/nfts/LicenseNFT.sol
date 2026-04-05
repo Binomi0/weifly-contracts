@@ -3,34 +3,35 @@ pragma solidity ^0.8.23;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Royalty.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/Pausable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
 /// @title LicenseNFT - NFT de licencias de vuelo N1-N4
 /// @notice Contrato ERC-721 simplificado y seguro para licencias de piloto
-contract LicenseNFT is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
-    uint256 private _tokenIdCounter;
-    mapping(uint256 => LicenseInfo) private _licenses;
+contract LicenseNFT is ERC721, ERC721URIStorage, Ownable {
+    mapping(LicenseType licenseType => uint8) license;
+    uint8 _tokenIdCounter = 1;
 
-    struct LicenseInfo {
-        string licenseType; // N1, N2, N3, N4
-        uint256 level; // Nivel 1-4
-        address pilot; // Piloto licenciado
-        uint256 flightHours; // Horas de vuelo acumuladas
-        bool isVerified; // Verificado por autoridad
-        uint256 mintTime; // Timestamp
+    enum LicenseType {
+        LAPL,
+        PPL,
+        CPL,
+        ATPL
     }
 
-    event LicenseMinted(
-        uint256 indexed tokenId,
-        string licenseType,
-        address indexed pilot,
-        uint256 quantity
-    );
+    struct ClaimCondition {
+        address currency;
+        uint256 maxClaimableSupply;
+        string metadata;
+        uint256 startTimestamp;
+        uint256 quantityLimitPerWallet;
+        uint256 pricePerToken;
+        uint256 supplyClaimed;
+        bytes32 merkleRoot;
+    }
 
-    event LicenseBurned(uint256 indexed tokenId, string reason);
+    mapping(uint256 => ClaimCondition) public claimConditions;
 
     constructor(
         string memory _name,
@@ -40,33 +41,8 @@ contract LicenseNFT is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
     // Override conflicting functions
     function supportsInterface(
         bytes4 interfaceId
-    )
-        public
-        view
-        virtual
-        override(ERC721, ERC721Enumerable, ERC721URIStorage)
-        returns (bool)
-    {
+    ) public view virtual override(ERC721, ERC721URIStorage) returns (bool) {
         return super.supportsInterface(interfaceId);
-    }
-
-    function _increaseBalance(
-        address account,
-        uint128 amount
-    ) internal virtual override(ERC721, ERC721Enumerable) {
-        super._increaseBalance(account, amount);
-    }
-
-    function tokenURI(
-        uint256 tokenId
-    )
-        public
-        view
-        virtual
-        override(ERC721, ERC721URIStorage)
-        returns (string memory)
-    {
-        return super.tokenURI(tokenId);
     }
 
     /// @notice Mint de licencia para piloto
@@ -76,74 +52,98 @@ contract LicenseNFT is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
     /// @return tokenId ID asignado
     function mintLicense(
         address pilot,
-        string memory licenseType,
+        LicenseType licenseType,
         string memory metadata
     ) external onlyOwner returns (uint256) {
         require(pilot != address(0), "Address invalid");
-        require(bytes(licenseType).length > 0, "Type required");
         require(bytes(metadata).length > 0, "Metadata required");
 
-        uint256 tokenId = _tokenIdCounter;
-        _tokenIdCounter++;
+        uint256 tokenId = _tokenIdCounter++;
+        license[licenseType] = uint8(licenseType);
 
         _safeMint(pilot, tokenId);
         _setTokenURI(tokenId, metadata);
+        return tokenId;
+    }
 
-        _licenses[tokenId] = LicenseInfo({
-            licenseType: licenseType,
-            level: parseLicenseLevel(licenseType),
-            pilot: pilot,
-            flightHours: 0,
-            isVerified: true,
-            mintTime: block.timestamp
-        });
+    /// @notice Lazy mint de licencia para piloto
+    /// @param pilot Dirección del piloto
+    /// @param licenseType Tipo de licencia (N1, N2, N3, N4)
+    /// @param metadata URI del NFT
+    /// @return tokenId ID asignado
+    function lazyMint(
+        address pilot,
+        LicenseType licenseType,
+        string memory metadata
+    ) external onlyOwner returns (uint256) {
+        require(pilot != address(0), "Address invalid");
+        require(bytes(metadata).length > 0, "Metadata required");
 
-        emit LicenseMinted(tokenId, licenseType, pilot, 1);
+        uint256 tokenId = _tokenIdCounter++;
+        license[licenseType] = uint8(licenseType);
+
+        _safeMint(pilot, tokenId);
+        _setTokenURI(tokenId, metadata);
         return tokenId;
     }
 
     /// @notice Burn de licencia
     /// @param tokenId ID de la licencia
-    /// @param reason Razón para burn
-    function burnLicense(
-        uint256 tokenId,
-        string memory reason
-    ) external onlyOwner {
+    function burnLicense(uint256 tokenId) external onlyOwner {
         require(ownerOf(tokenId) != address(0), "License not found");
 
-        delete _licenses[tokenId];
         _burn(tokenId);
-
-        emit LicenseBurned(tokenId, reason);
     }
 
-    /// @notice Obtener información de licencia
+    /// @notice Set claim conditions for a license
     /// @param tokenId ID de la licencia
-    /// @return LicenseInfo struct
-    function getLicenseInfo(
-        uint256 tokenId
-    ) external view returns (LicenseInfo memory) {
-        require(ownerOf(tokenId) != address(0), "License not found");
-        return _licenses[tokenId];
+    /// @param conditions Condiciones de claim
+    /// @param overrideSiOverrideSi true para sobrescribir condiciones existentes
+    function setClaimConditions(
+        uint256 tokenId,
+        ClaimCondition memory conditions,
+        bool overrideSiOverrideSi
+    ) external onlyOwner {
+        require(
+            claimConditions[tokenId].supplyClaimed == 0 || overrideSiOverrideSi,
+            "Claim conditions already set"
+        );
+        claimConditions[tokenId] = conditions;
     }
 
-    function getAllLicenses() external view returns (uint256[] memory) {
-        uint256 total = totalSupply();
-        uint256[] memory licenses = new uint256[](total);
-        for (uint256 i = 0; i < total; i++) {
-            licenses[i] = tokenByIndex(i);
-        }
-        return licenses;
+    /// @notice Get claim conditions for a license
+    /// @param tokenId ID de la licencia
+    /// @return conditions Condiciones de claim
+    function claimCondition(uint256 tokenId)
+        public
+        view
+        returns (ClaimCondition memory)
+    {
+        return claimConditions[tokenId];
     }
 
     /// @notice Parser de tipo de licencia a nivel
+    /// @param licenseType Tipo de licencia (LAPL, PPL, CPL, ATPL)
+    /// @return nivel Nivel de licencia (1-4)
     function parseLicenseLevel(
         string memory licenseType
     ) public pure returns (uint256) {
-        if (keccak256(bytes(licenseType)) == keccak256("LAPL")) return 1;
-        if (keccak256(bytes(licenseType)) == keccak256("PPL")) return 2;
-        if (keccak256(bytes(licenseType)) == keccak256("CPL")) return 3;
-        if (keccak256(bytes(licenseType)) == keccak256("ATPL")) return 4;
+        if (
+            keccak256(abi.encodePacked(licenseType)) ==
+            keccak256(abi.encodePacked("LAPL"))
+        ) return 1;
+        if (
+            keccak256(abi.encodePacked(licenseType)) ==
+            keccak256(abi.encodePacked("PPL"))
+        ) return 2;
+        if (
+            keccak256(abi.encodePacked(licenseType)) ==
+            keccak256(abi.encodePacked("CPL"))
+        ) return 3;
+        if (
+            keccak256(abi.encodePacked(licenseType)) ==
+            keccak256(abi.encodePacked("ATPL"))
+        ) return 4;
         return 0; // Invalido
     }
 
@@ -168,14 +168,6 @@ contract LicenseNFT is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
         return string.concat(base, uint256ToHex(tokenId));
     }
 
-    /// @notice Override de royaltyInfo
-    function royaltyInfo(
-        uint256,
-        uint256
-    ) external pure returns (address, uint256) {
-        return (address(0), 0); // No royalties para mint inicial
-    }
-
     receive() external payable {}
 
     fallback() external payable {}
@@ -192,7 +184,20 @@ contract LicenseNFT is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
         address to,
         uint256 tokenId,
         address auth
-    ) internal override(ERC721, ERC721Enumerable) returns (address) {
+    ) internal override(ERC721) returns (address) {
         return super._update(to, tokenId, auth);
+    }
+
+    /// @notice Sobrescribe tokenURI para usar _baseURI dinámico
+    function tokenURI(
+        uint256 tokenId
+    )
+        public
+        view
+        virtual
+        override(ERC721, ERC721URIStorage)
+        returns (string memory)
+    {
+        return super.tokenURI(tokenId);
     }
 }

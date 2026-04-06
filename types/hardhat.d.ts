@@ -19,6 +19,8 @@ getContractFactory(name: 'IPilotCareer', signerOrOptions?: ethers.Signer | Facto
 getContractFactory(name: 'IRecoverable', signerOrOptions?: ethers.Signer | FactoryOptions): Promise<Contracts.IRecoverable__factory>
 getContractFactory(name: 'PilotCareer', signerOrOptions?: ethers.Signer | FactoryOptions): Promise<Contracts.PilotCareer__factory>
 getContractFactory(name: 'Recoverable', signerOrOptions?: ethers.Signer | FactoryOptions): Promise<Contracts.Recoverable__factory>
+getContractFactory(name: 'IAirlineCoin', signerOrOptions?: ethers.Signer | FactoryOptions): Promise<Contracts.IAirlineCoin__factory>
+getContractFactory(name: 'IAirlineRewardCoin', signerOrOptions?: ethers.Signer | FactoryOptions): Promise<Contracts.IAirlineRewardCoin__factory>
 getContractFactory(name: 'IStakingAirline', signerOrOptions?: ethers.Signer | FactoryOptions): Promise<Contracts.IStakingAirline__factory>
 getContractFactory(name: 'AircraftNFT', signerOrOptions?: ethers.Signer | FactoryOptions): Promise<Contracts.AircraftNFT__factory>
 getContractFactory(name: 'LicenseNFT', signerOrOptions?: ethers.Signer | FactoryOptions): Promise<Contracts.LicenseNFT__factory>
@@ -36,6 +38,8 @@ getContractAt(name: 'IPilotCareer', address: string | ethers.Addressable, signer
 getContractAt(name: 'IRecoverable', address: string | ethers.Addressable, signer?: ethers.Signer): Promise<Contracts.IRecoverable>
 getContractAt(name: 'PilotCareer', address: string | ethers.Addressable, signer?: ethers.Signer): Promise<Contracts.PilotCareer>
 getContractAt(name: 'Recoverable', address: string | ethers.Addressable, signer?: ethers.Signer): Promise<Contracts.Recoverable>
+getContractAt(name: 'IAirlineCoin', address: string | ethers.Addressable, signer?: ethers.Signer): Promise<Contracts.IAirlineCoin>
+getContractAt(name: 'IAirlineRewardCoin', address: string | ethers.Addressable, signer?: ethers.Signer): Promise<Contracts.IAirlineRewardCoin>
 getContractAt(name: 'IStakingAirline', address: string | ethers.Addressable, signer?: ethers.Signer): Promise<Contracts.IStakingAirline>
 getContractAt(name: 'AircraftNFT', address: string | ethers.Addressable, signer?: ethers.Signer): Promise<Contracts.AircraftNFT>
 getContractAt(name: 'LicenseNFT', address: string | ethers.Addressable, signer?: ethers.Signer): Promise<Contracts.LicenseNFT>
@@ -53,6 +57,8 @@ deployContract(name: 'IPilotCareer', signerOrOptions?: ethers.Signer | DeployCon
 deployContract(name: 'IRecoverable', signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.IRecoverable>
 deployContract(name: 'PilotCareer', signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.PilotCareer>
 deployContract(name: 'Recoverable', signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.Recoverable>
+deployContract(name: 'IAirlineCoin', signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.IAirlineCoin>
+deployContract(name: 'IAirlineRewardCoin', signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.IAirlineRewardCoin>
 deployContract(name: 'IStakingAirline', signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.IStakingAirline>
 deployContract(name: 'AircraftNFT', signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.AircraftNFT>
 deployContract(name: 'LicenseNFT', signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.LicenseNFT>
@@ -70,6 +76,8 @@ deployContract(name: 'IPilotCareer', args: any[], signerOrOptions?: ethers.Signe
 deployContract(name: 'IRecoverable', args: any[], signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.IRecoverable>
 deployContract(name: 'PilotCareer', args: any[], signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.PilotCareer>
 deployContract(name: 'Recoverable', args: any[], signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.Recoverable>
+deployContract(name: 'IAirlineCoin', args: any[], signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.IAirlineCoin>
+deployContract(name: 'IAirlineRewardCoin', args: any[], signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.IAirlineRewardCoin>
 deployContract(name: 'IStakingAirline', args: any[], signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.IStakingAirline>
 deployContract(name: 'AircraftNFT', args: any[], signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.AircraftNFT>
 deployContract(name: 'LicenseNFT', args: any[], signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.LicenseNFT>

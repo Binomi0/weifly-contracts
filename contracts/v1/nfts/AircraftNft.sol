@@ -2,35 +2,41 @@
 pragma solidity ^0.8.23;
 
 import "@thirdweb-dev/contracts/base/ERC1155Drop.sol";
-import "../tokens/AirlineCoin.sol";
-import "../tokens/AirlineRewardCoin.sol";
+import "../interface/IAirlineCoin.sol";
+import "../interface/IAirlineRewardCoin.sol";
+import "../libs/HexUtils.sol";
 
 /**
  * @title AircraftNFT
- * @notice ERC1155 NFT que representa aeronaves, con funcionalidades de gas y licencias.
+ * @notice ERC1155 NFT representing aircraft with gas and license features.
  */
 contract AircraftNFT is ERC1155Drop {
-    /* -------------------------------------------------------------------------- */
-    /*                               STATE VARIABLES                                */
-    /* -------------------------------------------------------------------------- */
+    using HexUtils for bytes32;
 
+    /* ---- Custom Errors (cheaper than revert strings) ---- */
+    error DirectPayment();
+    error AlreadyMinted();
+    error NotMinted();
+    error InvalidAmount();
+    error InsufficientGas();
+    error NotOwner();
+    error TokenNotMinted();
+    error EmptyData();
+    error WrongCurrency();
+    error MaxExceeded();
+    error WrongPrice();
+    error MissingLicense();
+
+    /* ---- State ---- */
     address private erc1155LicenseAddress;
-    AirlineCoin private airlineCoin;
-    AirlineRewardCoin private airlineGasCoin;
+    IAirlineCoin private airlineCoin;
+    IAirlineRewardCoin private airlineGasCoin;
 
-    // Internal accounting of gas balances per aircraft per holder
     mapping(address => mapping(uint256 => uint256)) public gasBalance;
-
-    // Tracks which tokenIds have already been minted
     mapping(uint256 => bool) private _mintedTokens;
-
-    // Required license tokenId per aircraft tokenId
     mapping(uint256 => uint256) public requiredLicense;
 
-    /* -------------------------------------------------------------------------- */
-    /*                                EVENTS & ERRORS                               */
-    /* -------------------------------------------------------------------------- */
-
+    /* ---- Events ---- */
     event GasSent(
         address indexed to,
         uint256 indexed aircraftId,
@@ -42,10 +48,7 @@ contract AircraftNFT is ERC1155Drop {
         uint256 amount
     );
 
-    /* -------------------------------------------------------------------------- */
-    /*                                CONSTRUCTOR                                  */
-    /* -------------------------------------------------------------------------- */
-
+    /* ---- Constructor ---- */
     constructor(
         address _defaultAdmin,
         string memory _name,
@@ -65,46 +68,32 @@ contract AircraftNFT is ERC1155Drop {
         )
     {
         erc1155LicenseAddress = _licenseAddress;
-        // Default mapping (can be overridden by owner later)
         requiredLicense[0] = 0;
         requiredLicense[1] = 1;
         requiredLicense[2] = 2;
         requiredLicense[3] = 3;
     }
 
-    /* -------------------------------------------------------------------------- */
-    /*                                 RECEIVE                                    */
-    /* -------------------------------------------------------------------------- */
-
+    /* ---- Receive ---- */
     receive() external payable {
-        revert("Direct payments not accepted");
+        revert DirectPayment();
     }
 
-    /* -------------------------------------------------------------------------- */
-    /*                                  MODIFIERS                                   */
-    /* -------------------------------------------------------------------------- */
-
-    /// @dev Internal helper to confirm existence of a tokenId
+    /* ---- Helpers ---- */
     function _exists(uint256 _tokenId) internal view returns (bool) {
         return _mintedTokens[_tokenId];
     }
 
-    /* -------------------------------------------------------------------------- */
-    /*                          AIRLINE COIN & GAS COIN SETTERS                    */
-    /* -------------------------------------------------------------------------- */
-
+    /* ---- Coin Setters ---- */
     function setAirlineCoin(address _addr) external onlyOwner {
-        airlineCoin = AirlineCoin(_addr);
+        airlineCoin = IAirlineCoin(_addr);
     }
 
     function setAirlineGasCoin(address _addr) external onlyOwner {
-        airlineGasCoin = AirlineRewardCoin(_addr);
+        airlineGasCoin = IAirlineRewardCoin(_addr);
     }
 
-    /* -------------------------------------------------------------------------- */
-    /*                           REQ. LICENSE MANAGEMENT                           */
-    /* -------------------------------------------------------------------------- */
-
+    /* ---- License Management ---- */
     function setRequiredLicense(
         uint256 licenseIndex,
         uint256 licenseId
@@ -112,10 +101,7 @@ contract AircraftNFT is ERC1155Drop {
         requiredLicense[licenseIndex] = licenseId;
     }
 
-    /* -------------------------------------------------------------------------- */
-    /*                                 AIRCRAFT DATA                               */
-    /* -------------------------------------------------------------------------- */
-
+    /* ---- Aircraft Data ---- */
     struct AircraftData {
         string name;
         string description;
@@ -134,10 +120,6 @@ contract AircraftNFT is ERC1155Drop {
         uint256 price
     );
 
-    /**
-     * @notice Mints a new aircraft NFT
-     * @dev Only owner can mint. Generates a deterministic IPFS URI based on metadata.
-     */
     function mintAircraft(
         uint256 _tokenId,
         string memory _name,
@@ -147,9 +129,8 @@ contract AircraftNFT is ERC1155Drop {
         string memory _licenseType,
         uint256 _price
     ) external onlyOwner returns (string memory metadataURI) {
-        require(!_exists(_tokenId), "Aircraft already minted");
+        if (_exists(_tokenId)) revert AlreadyMinted();
 
-        // Store metadata
         _aircrafts[_tokenId] = AircraftData({
             name: _name,
             description: _description,
@@ -159,51 +140,87 @@ contract AircraftNFT is ERC1155Drop {
             price: _price
         });
 
-        // Mark as minted
         _mintedTokens[_tokenId] = true;
-
         emit AircraftMinted(_tokenId, _name, _description, _price);
 
-        // Generate deterministic URI
-        bytes32 hash = keccak256(
-            abi.encodePacked(
-                _tokenId,
-                _name,
-                _description,
-                _imageURI,
-                _model,
-                _licenseType,
-                _price
-            )
-        );
-
-        metadataURI = string.concat("ipfs://", bytes32ToHexString(hash));
+        metadataURI = _buildURI(_tokenId);
     }
 
-    /* -------------------------------------------------------------------------- */
-    /*                                 SETTERS (ADMIN)                            */
-    /* -------------------------------------------------------------------------- */
-
+    /* ---- Setters (Admin) ---- */
     function setAircraftData(
         uint256 _tokenId,
         AircraftData memory _data
     ) external onlyOwner {
-        require(_exists(_tokenId), "Aircraft does not exist");
+        if (!_exists(_tokenId)) revert NotMinted();
         _aircrafts[_tokenId] = _data;
     }
 
-    /* -------------------------------------------------------------------------- */
-    /*                           METADATA (TOKEN URI)                              */
-    /* -------------------------------------------------------------------------- */
-
+    /* ---- Metadata (Token URI) ---- */
     function tokenURI(
         uint256 _tokenId
     ) public view virtual returns (string memory) {
-        require(
-            _exists(_tokenId),
-            "ERC1155Metadata: URI query for nonexistent token"
-        );
+        if (!_exists(_tokenId)) revert NotMinted();
+        return _buildURI(_tokenId);
+    }
 
+    /* ---- Gas Transfers ---- */
+    function sendGas(
+        address _holder,
+        uint256 _amount,
+        uint256 _aircraftId
+    ) external onlyOwner {
+        if (_amount == 0) revert InvalidAmount();
+        if (airlineGasCoin.balanceOf(address(this)) < _amount)
+            revert InsufficientGas();
+        if (this.balanceOf(_holder, _aircraftId) == 0) revert NotOwner();
+
+        gasBalance[_holder][_aircraftId] += _amount;
+        emit GasSent(_holder, _aircraftId, _amount);
+    }
+
+    function burnGas(
+        address _holder,
+        uint256 _aircraftId,
+        uint256 _amount
+    ) external onlyOwner {
+        if (gasBalance[_holder][_aircraftId] < _amount)
+            revert InsufficientGas();
+        if (airlineGasCoin.balanceOf(address(this)) < _amount)
+            revert InsufficientGas();
+
+        gasBalance[_holder][_aircraftId] -= _amount;
+        airlineGasCoin.burn(_amount);
+        emit GasBurned(_holder, _aircraftId, _amount);
+    }
+
+    /* ---- Claim Override ---- */
+    function _beforeClaim(
+        uint256 _tokenId,
+        address _receiver,
+        uint256 _quantity,
+        address _currency,
+        uint256 _pricePerToken,
+        AllowlistProof calldata _allowlistProof,
+        bytes memory _data
+    ) internal view virtual override {
+        if (_tokenId >= nextTokenIdToLazyMint) revert TokenNotMinted();
+        if (_data.length == 0) revert EmptyData();
+        if (_allowlistProof.currency != _currency) revert WrongCurrency();
+        if (_allowlistProof.quantityLimitPerWallet != _quantity)
+            revert MaxExceeded();
+        if (_allowlistProof.pricePerToken != _pricePerToken)
+            revert WrongPrice();
+
+        ERC1155Drop licenseContract = ERC1155Drop(erc1155LicenseAddress);
+        uint256 requiredId = requiredLicense[_tokenId];
+        if (licenseContract.balanceOf(_receiver, requiredId) == 0)
+            revert MissingLicense();
+    }
+
+    /* ---- Internal Helpers ---- */
+    function _buildURI(
+        uint256 _tokenId
+    ) internal view returns (string memory) {
         AircraftData storage aircraft = _aircrafts[_tokenId];
         bytes32 hash = keccak256(
             abi.encodePacked(
@@ -216,118 +233,6 @@ contract AircraftNFT is ERC1155Drop {
                 aircraft.price
             )
         );
-
-        return string.concat("ipfs://", bytes32ToHexString(hash));
-    }
-
-    /* -------------------------------------------------------------------------- */
-    /*                                 GAS TRANSFERS                               */
-    /* -------------------------------------------------------------------------- */
-
-    /**
-     * @notice Transfer gas to a holder's aircraft
-     * @dev Owner-only operation. Requires the holder to own the aircraft.
-     */
-    function sendGas(
-        address _holder,
-        uint256 _amount,
-        uint256 _aircraftId
-    ) external onlyOwner {
-        require(_amount > 0, "Invalid amount");
-        require(
-            airlineGasCoin.balanceOf(address(this)) >= _amount,
-            "Insufficient contract gas balance"
-        );
-        require(
-            this.balanceOf(_holder, _aircraftId) > 0,
-            "Holder does not own this aircraft"
-        );
-
-        gasBalance[_holder][_aircraftId] += _amount;
-        emit GasSent(_holder, _aircraftId, _amount);
-    }
-
-    /**
-     * @notice Burn gas from a holder's aircraft
-     * @dev Owner-only operation. Requires sufficient internal accounting balance.
-     */
-    function burnGas(
-        address _holder,
-        uint256 _aircraftId,
-        uint256 _amount
-    ) external onlyOwner {
-        require(
-            gasBalance[_holder][_aircraftId] >= _amount,
-            "Amount exceeds balance"
-        );
-        require(
-            airlineGasCoin.balanceOf(address(this)) >= _amount,
-            "Insufficient gas balance in contract"
-        );
-
-        gasBalance[_holder][_aircraftId] -= _amount;
-        airlineGasCoin.burn(_amount); // Assumes contract has minter/burner role
-        emit GasBurned(_holder, _aircraftId, _amount);
-    }
-
-    /* -------------------------------------------------------------------------- */
-    /*                               CLAIM OVERRIDE                                */
-    /* -------------------------------------------------------------------------- */
-
-    /**
-     * @dev Override to enforce license checks and other conditions during lazy mint.
-     */
-    function _beforeClaim(
-        uint256 _tokenId,
-        address _receiver,
-        uint256 _quantity,
-        address _currency,
-        uint256 _pricePerToken,
-        AllowlistProof calldata _allowlistProof,
-        bytes memory _data
-    ) internal view virtual override {
-        // Ensure the token has been lazy‑minted
-        require(_tokenId < nextTokenIdToLazyMint, "Token not minted yet");
-
-        // Data must be non‑empty (custom validation)
-        require(_data.length > 0, "Input data is empty");
-
-        // Verify allowlist conditions
-        require(_allowlistProof.currency == _currency, "Wrong currency");
-        require(
-            _allowlistProof.quantityLimitPerWallet == _quantity,
-            "Maximum exceeded"
-        );
-        require(
-            _allowlistProof.pricePerToken == _pricePerToken,
-            "Wrong price per token"
-        );
-
-        // Verify the receiver owns the required license for this aircraft
-        ERC1155Drop licenseContract = ERC1155Drop(erc1155LicenseAddress);
-        uint256 requiredId = requiredLicense[_tokenId];
-        require(
-            licenseContract.balanceOf(_receiver, requiredId) > 0,
-            "Receiver lacks required license"
-        );
-    }
-
-    /* -------------------------------------------------------------------------- */
-    /*                            HELPER: BYTES32 TO HEX                         */
-    /* -------------------------------------------------------------------------- */
-
-    /**
-     * @dev Converts a bytes32 to a hex string (without 0x).
-     */
-    function bytes32ToHexString(
-        bytes32 data
-    ) internal pure returns (string memory) {
-        bytes memory alphabet = "0123456789abcdef";
-        bytes memory str = new bytes(64);
-        for (uint i = 0; i < 32; i++) {
-            str[i * 2] = alphabet[uint8(data[i] >> 4)];
-            str[1 + i * 2] = alphabet[uint8(data[i] & 0x0f)];
-        }
-        return string(str);
+        return string.concat("ipfs://", hash.toHexString());
     }
 }

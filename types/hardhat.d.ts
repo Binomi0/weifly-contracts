@@ -13,15 +13,16 @@ declare module "@nomicfoundation/hardhat-ethers/types" {
   getContractFactory(name: 'Airline', signerOrOptions?: ethers.Signer | FactoryOptions): Promise<Contracts.Airline__factory>
 getContractFactory(name: 'AirlinePilot', signerOrOptions?: ethers.Signer | FactoryOptions): Promise<Contracts.AirlinePilot__factory>
 getContractFactory(name: 'FlightController', signerOrOptions?: ethers.Signer | FactoryOptions): Promise<Contracts.FlightController__factory>
-getContractFactory(name: 'PilotCareer', signerOrOptions?: ethers.Signer | FactoryOptions): Promise<Contracts.PilotCareer__factory>
 getContractFactory(name: 'IAirline', signerOrOptions?: ethers.Signer | FactoryOptions): Promise<Contracts.IAirline__factory>
 getContractFactory(name: 'IAirlinePilot', signerOrOptions?: ethers.Signer | FactoryOptions): Promise<Contracts.IAirlinePilot__factory>
+getContractFactory(name: 'IPilotCareer', signerOrOptions?: ethers.Signer | FactoryOptions): Promise<Contracts.IPilotCareer__factory>
 getContractFactory(name: 'IRecoverable', signerOrOptions?: ethers.Signer | FactoryOptions): Promise<Contracts.IRecoverable__factory>
+getContractFactory(name: 'PilotCareer', signerOrOptions?: ethers.Signer | FactoryOptions): Promise<Contracts.PilotCareer__factory>
 getContractFactory(name: 'Recoverable', signerOrOptions?: ethers.Signer | FactoryOptions): Promise<Contracts.Recoverable__factory>
-getContractFactory(name: 'StakingAirline', signerOrOptions?: ethers.Signer | FactoryOptions): Promise<Contracts.StakingAirline__factory>
 getContractFactory(name: 'IStakingAirline', signerOrOptions?: ethers.Signer | FactoryOptions): Promise<Contracts.IStakingAirline__factory>
 getContractFactory(name: 'AircraftNFT', signerOrOptions?: ethers.Signer | FactoryOptions): Promise<Contracts.AircraftNFT__factory>
 getContractFactory(name: 'LicenseNFT', signerOrOptions?: ethers.Signer | FactoryOptions): Promise<Contracts.LicenseNFT__factory>
+getContractFactory(name: 'StakingAirline', signerOrOptions?: ethers.Signer | FactoryOptions): Promise<Contracts.StakingAirline__factory>
 getContractFactory(name: 'AirlineCoin', signerOrOptions?: ethers.Signer | FactoryOptions): Promise<Contracts.AirlineCoin__factory>
 getContractFactory(name: 'AirlineRewardCoin', signerOrOptions?: ethers.Signer | FactoryOptions): Promise<Contracts.AirlineRewardCoin__factory>
 getContractFactory(name: 'NativeTokenWrapper', signerOrOptions?: ethers.Signer | FactoryOptions): Promise<Contracts.NativeTokenWrapper__factory>
@@ -29,15 +30,16 @@ getContractFactory(name: 'NativeTokenWrapper', signerOrOptions?: ethers.Signer |
   getContractAt(name: 'Airline', address: string | ethers.Addressable, signer?: ethers.Signer): Promise<Contracts.Airline>
 getContractAt(name: 'AirlinePilot', address: string | ethers.Addressable, signer?: ethers.Signer): Promise<Contracts.AirlinePilot>
 getContractAt(name: 'FlightController', address: string | ethers.Addressable, signer?: ethers.Signer): Promise<Contracts.FlightController>
-getContractAt(name: 'PilotCareer', address: string | ethers.Addressable, signer?: ethers.Signer): Promise<Contracts.PilotCareer>
 getContractAt(name: 'IAirline', address: string | ethers.Addressable, signer?: ethers.Signer): Promise<Contracts.IAirline>
 getContractAt(name: 'IAirlinePilot', address: string | ethers.Addressable, signer?: ethers.Signer): Promise<Contracts.IAirlinePilot>
+getContractAt(name: 'IPilotCareer', address: string | ethers.Addressable, signer?: ethers.Signer): Promise<Contracts.IPilotCareer>
 getContractAt(name: 'IRecoverable', address: string | ethers.Addressable, signer?: ethers.Signer): Promise<Contracts.IRecoverable>
+getContractAt(name: 'PilotCareer', address: string | ethers.Addressable, signer?: ethers.Signer): Promise<Contracts.PilotCareer>
 getContractAt(name: 'Recoverable', address: string | ethers.Addressable, signer?: ethers.Signer): Promise<Contracts.Recoverable>
-getContractAt(name: 'StakingAirline', address: string | ethers.Addressable, signer?: ethers.Signer): Promise<Contracts.StakingAirline>
 getContractAt(name: 'IStakingAirline', address: string | ethers.Addressable, signer?: ethers.Signer): Promise<Contracts.IStakingAirline>
 getContractAt(name: 'AircraftNFT', address: string | ethers.Addressable, signer?: ethers.Signer): Promise<Contracts.AircraftNFT>
 getContractAt(name: 'LicenseNFT', address: string | ethers.Addressable, signer?: ethers.Signer): Promise<Contracts.LicenseNFT>
+getContractAt(name: 'StakingAirline', address: string | ethers.Addressable, signer?: ethers.Signer): Promise<Contracts.StakingAirline>
 getContractAt(name: 'AirlineCoin', address: string | ethers.Addressable, signer?: ethers.Signer): Promise<Contracts.AirlineCoin>
 getContractAt(name: 'AirlineRewardCoin', address: string | ethers.Addressable, signer?: ethers.Signer): Promise<Contracts.AirlineRewardCoin>
 getContractAt(name: 'NativeTokenWrapper', address: string | ethers.Addressable, signer?: ethers.Signer): Promise<Contracts.NativeTokenWrapper>
@@ -45,15 +47,16 @@ getContractAt(name: 'NativeTokenWrapper', address: string | ethers.Addressable, 
   deployContract(name: 'Airline', signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.Airline>
 deployContract(name: 'AirlinePilot', signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.AirlinePilot>
 deployContract(name: 'FlightController', signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.FlightController>
-deployContract(name: 'PilotCareer', signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.PilotCareer>
 deployContract(name: 'IAirline', signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.IAirline>
 deployContract(name: 'IAirlinePilot', signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.IAirlinePilot>
+deployContract(name: 'IPilotCareer', signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.IPilotCareer>
 deployContract(name: 'IRecoverable', signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.IRecoverable>
+deployContract(name: 'PilotCareer', signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.PilotCareer>
 deployContract(name: 'Recoverable', signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.Recoverable>
-deployContract(name: 'StakingAirline', signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.StakingAirline>
 deployContract(name: 'IStakingAirline', signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.IStakingAirline>
 deployContract(name: 'AircraftNFT', signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.AircraftNFT>
 deployContract(name: 'LicenseNFT', signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.LicenseNFT>
+deployContract(name: 'StakingAirline', signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.StakingAirline>
 deployContract(name: 'AirlineCoin', signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.AirlineCoin>
 deployContract(name: 'AirlineRewardCoin', signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.AirlineRewardCoin>
 deployContract(name: 'NativeTokenWrapper', signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.NativeTokenWrapper>
@@ -61,15 +64,16 @@ deployContract(name: 'NativeTokenWrapper', signerOrOptions?: ethers.Signer | Dep
   deployContract(name: 'Airline', args: any[], signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.Airline>
 deployContract(name: 'AirlinePilot', args: any[], signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.AirlinePilot>
 deployContract(name: 'FlightController', args: any[], signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.FlightController>
-deployContract(name: 'PilotCareer', args: any[], signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.PilotCareer>
 deployContract(name: 'IAirline', args: any[], signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.IAirline>
 deployContract(name: 'IAirlinePilot', args: any[], signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.IAirlinePilot>
+deployContract(name: 'IPilotCareer', args: any[], signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.IPilotCareer>
 deployContract(name: 'IRecoverable', args: any[], signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.IRecoverable>
+deployContract(name: 'PilotCareer', args: any[], signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.PilotCareer>
 deployContract(name: 'Recoverable', args: any[], signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.Recoverable>
-deployContract(name: 'StakingAirline', args: any[], signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.StakingAirline>
 deployContract(name: 'IStakingAirline', args: any[], signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.IStakingAirline>
 deployContract(name: 'AircraftNFT', args: any[], signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.AircraftNFT>
 deployContract(name: 'LicenseNFT', args: any[], signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.LicenseNFT>
+deployContract(name: 'StakingAirline', args: any[], signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.StakingAirline>
 deployContract(name: 'AirlineCoin', args: any[], signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.AirlineCoin>
 deployContract(name: 'AirlineRewardCoin', args: any[], signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.AirlineRewardCoin>
 deployContract(name: 'NativeTokenWrapper', args: any[], signerOrOptions?: ethers.Signer | DeployContractOptions): Promise<Contracts.NativeTokenWrapper>

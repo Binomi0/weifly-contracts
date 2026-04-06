@@ -3,4 +3,5 @@
 /* eslint-disable */
 export { IAirline__factory } from './IAirline__factory.js';
 export { IAirlinePilot__factory } from './IAirlinePilot__factory.js';
+export { IPilotCareer__factory } from './IPilotCareer__factory.js';
 export { IRecoverable__factory } from './IRecoverable__factory.js';

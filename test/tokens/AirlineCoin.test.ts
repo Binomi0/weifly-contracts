@@ -1,6 +1,7 @@
+import { describe, it } from "node:test";
+
 import hre from "hardhat";
 import { expect } from "chai";
-import { describe, it } from "node:test";
 import { parseEther } from "ethers";
 
 const { ethers } = await hre.network.connect();

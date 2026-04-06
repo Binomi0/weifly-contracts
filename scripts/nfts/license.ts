@@ -1,13 +1,14 @@
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { ethers } from "hardhat";
+import { parseUnits } from "ethers/lib/utils";
+
+import { AirlineCoin } from "../../typechain-types";
 import {
   deployLicenseNFT,
   lazyMintLicense,
   mintLicense,
   setClaimConditionsLicense,
 } from "../../utils";
-import { AirlineCoin } from "../../typechain-types";
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { ethers } from "hardhat";
-import { parseUnits } from "ethers/lib/utils";
 
 const MAX_INT_ETH =
   "0x8000000000000000000000000000000000000000000000000000000000000000";

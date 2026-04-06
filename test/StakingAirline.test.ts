@@ -1,6 +1,7 @@
+import { describe, it } from "node:test";
+
 import hre from "hardhat";
 import { expect } from "chai";
-import { describe, it } from "node:test";
 import { parseEther } from "ethers";
 
 const { networkHelpers, ethers } = await hre.network.connect();
@@ -82,8 +83,9 @@ describe("StakingAirline: Production Tests", async () => {
       try {
         await stakingAirline.connect(pilot1).stake(small);
         throw new Error("Did not revert");
-      } catch (e: any) {
-        expect(e.message).to.contain("Stake amount below minimum");
+      } catch (e: unknown) {
+        const error = e as Error;
+        expect(error.message).to.contain("Stake amount below minimum");
       }
     });
 
@@ -93,8 +95,9 @@ describe("StakingAirline: Production Tests", async () => {
       try {
         await stakingAirline.connect(pilot1).stake(over);
         throw new Error("Did not revert");
-      } catch (e: any) {
-        expect(e.message).to.contain("Stake amount exceeds maximum");
+      } catch (e: unknown) {
+        const error = e as Error;
+        expect(error.message).to.contain("Stake amount exceeds maximum");
       }
     });
   });
@@ -139,8 +142,9 @@ describe("StakingAirline: Production Tests", async () => {
       try {
         await stakingAirline.connect(pilot1).claimRewards();
         throw new Error("Did not revert");
-      } catch (e: any) {
-        expect(e.message).to.contain("Rewards below minimum claim amount");
+      } catch (e: unknown) {
+        const error = e as Error;
+        expect(error.message).to.contain("Rewards below minimum claim amount");
       }
     });
   });

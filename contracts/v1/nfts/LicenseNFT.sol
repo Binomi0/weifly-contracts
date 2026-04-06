@@ -6,12 +6,20 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "../../core/interface/IPilotCareer.sol";
 
 /// @title LicenseNFT - NFT de licencias de vuelo N1-N4
 /// @notice Contrato ERC-721 simplificado y seguro para licencias de piloto
 contract LicenseNFT is ERC721, ERC721URIStorage, Ownable {
-    mapping(LicenseType licenseType => uint8) license;
     uint8 _tokenIdCounter = 1;
+
+    IERC20 public airlineCoin;
+    IPilotCareer public pilotCareer;
+    uint256 public claimFee = 10 * 10**18;
+
+    mapping(address => mapping(LicenseType => bool)) public hasClaimedLicense;
+    mapping(uint256 => LicenseType) public tokenLicenseType;
 
     enum LicenseType {
         LAPL,
@@ -20,18 +28,6 @@ contract LicenseNFT is ERC721, ERC721URIStorage, Ownable {
         ATPL
     }
 
-    struct ClaimCondition {
-        address currency;
-        uint256 maxClaimableSupply;
-        string metadata;
-        uint256 startTimestamp;
-        uint256 quantityLimitPerWallet;
-        uint256 pricePerToken;
-        uint256 supplyClaimed;
-        bytes32 merkleRoot;
-    }
-
-    mapping(uint256 => ClaimCondition) public claimConditions;
 
     constructor(
         string memory _name,
@@ -59,7 +55,7 @@ contract LicenseNFT is ERC721, ERC721URIStorage, Ownable {
         require(bytes(metadata).length > 0, "Metadata required");
 
         uint256 tokenId = _tokenIdCounter++;
-        license[licenseType] = uint8(licenseType);
+        tokenLicenseType[tokenId] = licenseType;
 
         _safeMint(pilot, tokenId);
         _setTokenURI(tokenId, metadata);
@@ -80,7 +76,7 @@ contract LicenseNFT is ERC721, ERC721URIStorage, Ownable {
         require(bytes(metadata).length > 0, "Metadata required");
 
         uint256 tokenId = _tokenIdCounter++;
-        license[licenseType] = uint8(licenseType);
+        tokenLicenseType[tokenId] = licenseType;
 
         _safeMint(pilot, tokenId);
         _setTokenURI(tokenId, metadata);
@@ -95,31 +91,52 @@ contract LicenseNFT is ERC721, ERC721URIStorage, Ownable {
         _burn(tokenId);
     }
 
-    /// @notice Set claim conditions for a license
-    /// @param tokenId ID de la licencia
-    /// @param conditions Condiciones de claim
-    /// @param overrideSiOverrideSi true para sobrescribir condiciones existentes
-    function setClaimConditions(
-        uint256 tokenId,
-        ClaimCondition memory conditions,
-        bool overrideSiOverrideSi
-    ) external onlyOwner {
-        require(
-            claimConditions[tokenId].supplyClaimed == 0 || overrideSiOverrideSi,
-            "Claim conditions already set"
-        );
-        claimConditions[tokenId] = conditions;
+    /// @notice Permite configurar los contratos externos
+    /// @param _airlineCoin Dirección del token AIRL
+    /// @param _pilotCareer Dirección del contrato PilotCareer
+    function setDependencies(address _airlineCoin, address _pilotCareer) external onlyOwner {
+        airlineCoin = IERC20(_airlineCoin);
+        pilotCareer = IPilotCareer(_pilotCareer);
     }
 
-    /// @notice Get claim conditions for a license
-    /// @param tokenId ID de la licencia
-    /// @return conditions Condiciones de claim
-    function claimCondition(uint256 tokenId)
-        public
-        view
-        returns (ClaimCondition memory)
-    {
-        return claimConditions[tokenId];
+    /// @notice Permite actualizar el precio en AIRL para claimear una licencia
+    /// @param _fee Nuevo precio en wei
+    function setClaimFee(uint256 _fee) external onlyOwner {
+        claimFee = _fee;
+    }
+
+    /// @notice Retorna las horas de vuelo necesarias para una licencia
+    /// @param licenseType Tipo de licencia
+    /// @return limit Horas de vuelo requeridas
+    function getRequiredHours(LicenseType licenseType) public pure returns (uint16 limit) {
+        if (licenseType == LicenseType.LAPL) return 1;
+        if (licenseType == LicenseType.PPL) return 100;
+        if (licenseType == LicenseType.CPL) return 500;
+        if (licenseType == LicenseType.ATPL) return 1000;
+        revert("Invalid license type");
+    }
+
+    /// @notice Permite a un piloto claimear su licencia cumpliendo horas y pagando AIRL
+    /// @param licenseType El tipo de licencia (0=LAPL, 1=PPL, 2=CPL, 3=ATPL)
+    /// @param metadata URI de la metadata (opcional si se usa _baseURI)
+    function claimLicense(LicenseType licenseType, string memory metadata) external {
+        require(address(airlineCoin) != address(0) && address(pilotCareer) != address(0), "Dependencies not set");
+        require(!hasClaimedLicense[msg.sender][licenseType], "License already claimed");
+        require(bytes(metadata).length > 0, "Metadata required");
+
+        uint256 hoursLogged = pilotCareer.getTotalFlightTime(msg.sender);
+        uint256 reqHours = getRequiredHours(licenseType);
+        require(hoursLogged >= reqHours, "Not enough flight hours");
+
+        require(airlineCoin.transferFrom(msg.sender, owner(), claimFee), "Fee transfer failed");
+
+        hasClaimedLicense[msg.sender][licenseType] = true;
+
+        uint256 tokenId = _tokenIdCounter++;
+        tokenLicenseType[tokenId] = licenseType;
+
+        _safeMint(msg.sender, tokenId);
+        _setTokenURI(tokenId, metadata);
     }
 
     /// @notice Parser de tipo de licencia a nivel
@@ -128,23 +145,14 @@ contract LicenseNFT is ERC721, ERC721URIStorage, Ownable {
     function parseLicenseLevel(
         string memory licenseType
     ) public pure returns (uint256) {
-        if (
-            keccak256(abi.encodePacked(licenseType)) ==
-            keccak256(abi.encodePacked("LAPL"))
-        ) return 1;
-        if (
-            keccak256(abi.encodePacked(licenseType)) ==
-            keccak256(abi.encodePacked("PPL"))
-        ) return 2;
-        if (
-            keccak256(abi.encodePacked(licenseType)) ==
-            keccak256(abi.encodePacked("CPL"))
-        ) return 3;
-        if (
-            keccak256(abi.encodePacked(licenseType)) ==
-            keccak256(abi.encodePacked("ATPL"))
-        ) return 4;
-        return 0; // Invalido
+        bytes32 hash = keccak256(abi.encodePacked(licenseType));
+
+        if (hash == keccak256(abi.encodePacked("LAPL"))) return 1;
+        if (hash == keccak256(abi.encodePacked("PPL"))) return 2;
+        if (hash == keccak256(abi.encodePacked("CPL"))) return 3;
+        if (hash == keccak256(abi.encodePacked("ATPL"))) return 4;
+
+        revert("Invalid license type"); // Mejor que return 0
     }
 
     /// @notice Helper function to convert tokenId to hex string

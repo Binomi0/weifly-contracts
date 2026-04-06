@@ -1,0 +1,6 @@
+# Auto detect text files and normalize to LF
+* text=auto
+
+# Explicitly keep these as LF
+*.ts text eol=lf
+*.json text eol=lf

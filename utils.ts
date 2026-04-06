@@ -1,6 +1,10 @@
 import hre from "hardhat";
+import { HardhatRuntimeEnvironment } from "hardhat/types";
+
 const net = hre as HardhatRuntimeEnvironment;
 const { ethers, networkHelpers } = await net.network.connect();
+
+export { ethers, networkHelpers };
 import {
   parseUnits,
   AbiCoder,
@@ -9,14 +13,12 @@ import {
   getBytes,
 } from "ethers";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/types";
-import { HardhatRuntimeEnvironment } from "hardhat/types";
 
-import { licenses } from "./contants.js";
-
-import { AirlineCoin, LicenseNFT } from "@types/index.js";
+import { AircraftNFT, AirlineCoin, LicenseNFT } from "./types/index.js";
 
 const ZERO_ADDRESS =
   "0x0000000000000000000000000000000000000000000000000000000000000000";
+
 export async function deployAirlineCoin(owner: string) {
   const AirlineCoin = await ethers.getContractFactory("AirlineCoin");
   const airlineCoin = await AirlineCoin.deploy(owner);
@@ -83,99 +85,22 @@ export async function deployAircraftNFT(
   return aircraft;
 }
 
-export async function setClaimConditionsLicense(
-  license: LicenseNFT,
-  tokenId: bigint,
-  airlineCoin: AirlineCoin,
-) {
-  await license.setClaimConditions(
-    tokenId,
-    {
-      currency: airlineCoin.getAddress(),
-      maxClaimableSupply: 100,
-      metadata: JSON.stringify(tokenId.toString()),
-      startTimestamp: await networkHelpers.time.latest(),
-      quantityLimitPerWallet: 1,
-      pricePerToken: parseUnits(licenses[tokenId].price.toString(), "ether"),
-      supplyClaimed: 0,
-      merkleRoot: ZERO_ADDRESS,
-    },
-    false,
-  );
-}
-
-export async function mintLicense(
-  license: LicenseNFT,
-  otherAccount: HardhatEthersSigner,
-  tokenId: number,
-  airlineCoin: AirlineCoin,
-  requiredLicenseId: number,
-  amount = 1,
-) {
-  // console.log("Minting License Token id =>", tokenId);
-  const cc = await license.claimCondition(tokenId);
-  const encodedData = (ethers as any).AbiCoder.defaultAbiCoder().encode(
-    ["uint256"],
-    [requiredLicenseId],
-  );
-
-  return await license.connect(otherAccount).claim(
-    otherAccount.address,
-    tokenId,
-    amount,
-    airlineCoin.address,
-    parseUnits(licenses[tokenId].price.toString(), "ether"),
-    {
-      proof: [ZERO_ADDRESS],
-      quantityLimitPerWallet: cc.quantityLimitPerWallet,
-      pricePerToken: cc.pricePerToken,
-      currency: cc.currency,
-    },
-    hexlify(encodedData),
-  );
-}
-
-export async function lazyMintLicense(
-  _amount: string,
-  tokenId: bigint,
-  owner: HardhatEthersSigner,
-  license: LicenseNFT,
-) {
-  const amount = parseUnits(_amount, "wei"); // Minting 1 token
-  const baseURIForTokens = "http://localhost:3000/api/metadata/license/";
-  const encryptedURI = await owner.signMessage(baseURIForTokens);
-  const provenanceHash = encodeBytes32String(""); // Convert to bytes32
-  const _data = AbiCoder.defaultAbiCoder().encode(
-    ["bytes", "bytes32"],
-    [getBytes(encryptedURI), provenanceHash],
-  );
-
-  try {
-    await license.lazyMint(amount, baseURIForTokens, _data);
-    await license.waitForDeployment();
-
-    return true;
-  } catch (error) {
-    console.log("ERROR =>", error);
-    return false;
-  }
-}
-
 export async function setClaimConditionsAircraft(
   aircraft: AircraftNFT,
   tokenId: number,
   airlineCoin: AirlineCoin,
 ) {
+  const metadata = getAircraftMetadata(tokenId);
   await aircraft.setClaimConditions(
     tokenId,
     {
-      currency: airlineCoin.address,
-      maxClaimableSupply: 100,
+      currency: await airlineCoin.getAddress(),
+      maxClaimableSupply: 100n,
       metadata: JSON.stringify(aircrafts[tokenId]),
       startTimestamp: await networkHelpers.time.latest(),
-      quantityLimitPerWallet: 1,
+      quantityLimitPerWallet: 1n,
       pricePerToken: parseUnits(aircrafts[tokenId].price.toString(), "ether"),
-      supplyClaimed: 0,
+      supplyClaimed: 0n,
       merkleRoot: ZERO_ADDRESS,
     },
     false,

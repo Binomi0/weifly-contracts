@@ -1,23 +1,23 @@
-import hre from "hardhat";
-import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { expect } from "chai";
 import { describe, it } from "node:test";
+
+import hre from "hardhat";
+import { expect } from "chai";
+
 import {
   deployAircraftNFT,
   deployAirlineCoin,
   deployAirlineRewardCoin,
   deployLicenseNFT,
-} from "../../../utils.js";
+} from "../../utils.js";
 
-const net = hre as HardhatRuntimeEnvironment;
-const { ethers, networkHelpers } = await net.network.connect();
+const { ethers, networkHelpers } = await hre.network.connect();
 
-describe("Aircraft Cessna 172", async function () {
+describe("Aircraft Antonov AN225", async function () {
   async function deployFixture() {
     const [owner, otherAccount, thirdAccount] = await ethers.getSigners();
     const airlineCoin = await deployAirlineCoin(owner.address);
     const airlineRewardCoin = await deployAirlineRewardCoin(owner.address);
-    const license = await deployLicenseNFT(owner.address);
+    const license = await deployLicenseNFT();
     const aircraft = await deployAircraftNFT(owner, await license.getAddress());
 
     // Basic configuration
@@ -43,13 +43,13 @@ describe("Aircraft Cessna 172", async function () {
 
   it("Should have correct initial required license mappings from constructor", async function () {
     const { aircraft } = await networkHelpers.loadFixture(deployFixture);
-    expect(await aircraft.requiredLicense(0n)).to.equal(0n);
+    expect(await aircraft.requiredLicense(3n)).to.equal(3n);
   });
 
   it("Should allow the default admin to update the required license mapping", async function () {
     const { aircraft } = await networkHelpers.loadFixture(deployFixture);
-    await aircraft.setRequiredLicense(10, 0);
-    expect(await aircraft.requiredLicense(10n)).to.equal(0n);
+    await aircraft.setRequiredLicense(10, 3);
+    expect(await aircraft.requiredLicense(10n)).to.equal(3n);
   });
 
   it("Should permit the default admin to update coin contract addresses", async function () {
@@ -74,7 +74,7 @@ describe("Aircraft Cessna 172", async function () {
 
     const airlineCoinAddress = await airlineCoin.getAddress();
     const restrictedCalls = [
-      () => aircraft.connect(otherAccount).setRequiredLicense(10, 0),
+      () => aircraft.connect(otherAccount).setRequiredLicense(10, 3),
       () => aircraft.connect(otherAccount).setAirlineCoin(airlineCoinAddress),
       () =>
         aircraft.connect(otherAccount).setAirlineGasCoin(airlineCoinAddress),
@@ -83,7 +83,7 @@ describe("Aircraft Cessna 172", async function () {
     for (const call of restrictedCalls) {
       try {
         await call();
-      } catch (e: any) {
+      } catch (e: unknown) {
         // Expected revert
       }
     }

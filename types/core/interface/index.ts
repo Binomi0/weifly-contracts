@@ -3,4 +3,5 @@
 /* eslint-disable */
 export type { IAirline } from './IAirline.js';
 export type { IAirlinePilot } from './IAirlinePilot.js';
+export type { IPilotCareer } from './IPilotCareer.js';
 export type { IRecoverable } from './IRecoverable.js';

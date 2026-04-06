@@ -6,14 +6,19 @@ import type { TypedContractEvent, TypedDeferredTopicFilter, TypedEventLog, Typed
   
 
   export interface LicenseNFTInterface extends Interface {
-    getFunction(nameOrSignature: "approve" | "balanceOf" | "burnLicense" | "getApproved" | "isApprovedForAll" | "lazyMint" | "mintLicense" | "name" | "owner" | "ownerOf" | "parseLicenseLevel" | "renounceOwnership" | "safeTransferFrom(address,address,uint256)" | "safeTransferFrom(address,address,uint256,bytes)" | "setApprovalForAll" | "supportsInterface" | "symbol" | "tokenURI" | "transferFrom" | "transferOwnership"): FunctionFragment;
+    getFunction(nameOrSignature: "airlineCoin" | "approve" | "balanceOf" | "burnLicense" | "claimFee" | "claimLicense" | "getApproved" | "getRequiredHours" | "hasClaimedLicense" | "isApprovedForAll" | "lazyMint" | "mintLicense" | "name" | "owner" | "ownerOf" | "parseLicenseLevel" | "pilotCareer" | "renounceOwnership" | "safeTransferFrom(address,address,uint256)" | "safeTransferFrom(address,address,uint256,bytes)" | "setApprovalForAll" | "setClaimFee" | "setDependencies" | "supportsInterface" | "symbol" | "tokenLicenseType" | "tokenURI" | "transferFrom" | "transferOwnership"): FunctionFragment;
 
     getEvent(nameOrSignatureOrTopic: "Approval" | "ApprovalForAll" | "BatchMetadataUpdate" | "MetadataUpdate" | "OwnershipTransferred" | "Transfer"): EventFragment;
 
-    encodeFunctionData(functionFragment: 'approve', values: [AddressLike, BigNumberish]): string;
+    encodeFunctionData(functionFragment: 'airlineCoin', values?: undefined): string;
+encodeFunctionData(functionFragment: 'approve', values: [AddressLike, BigNumberish]): string;
 encodeFunctionData(functionFragment: 'balanceOf', values: [AddressLike]): string;
 encodeFunctionData(functionFragment: 'burnLicense', values: [BigNumberish]): string;
+encodeFunctionData(functionFragment: 'claimFee', values?: undefined): string;
+encodeFunctionData(functionFragment: 'claimLicense', values: [BigNumberish, string]): string;
 encodeFunctionData(functionFragment: 'getApproved', values: [BigNumberish]): string;
+encodeFunctionData(functionFragment: 'getRequiredHours', values: [BigNumberish]): string;
+encodeFunctionData(functionFragment: 'hasClaimedLicense', values: [AddressLike, BigNumberish]): string;
 encodeFunctionData(functionFragment: 'isApprovedForAll', values: [AddressLike, AddressLike]): string;
 encodeFunctionData(functionFragment: 'lazyMint', values: [AddressLike, BigNumberish, string]): string;
 encodeFunctionData(functionFragment: 'mintLicense', values: [AddressLike, BigNumberish, string]): string;
@@ -21,20 +26,29 @@ encodeFunctionData(functionFragment: 'name', values?: undefined): string;
 encodeFunctionData(functionFragment: 'owner', values?: undefined): string;
 encodeFunctionData(functionFragment: 'ownerOf', values: [BigNumberish]): string;
 encodeFunctionData(functionFragment: 'parseLicenseLevel', values: [string]): string;
+encodeFunctionData(functionFragment: 'pilotCareer', values?: undefined): string;
 encodeFunctionData(functionFragment: 'renounceOwnership', values?: undefined): string;
 encodeFunctionData(functionFragment: 'safeTransferFrom(address,address,uint256)', values: [AddressLike, AddressLike, BigNumberish]): string;
 encodeFunctionData(functionFragment: 'safeTransferFrom(address,address,uint256,bytes)', values: [AddressLike, AddressLike, BigNumberish, BytesLike]): string;
 encodeFunctionData(functionFragment: 'setApprovalForAll', values: [AddressLike, boolean]): string;
+encodeFunctionData(functionFragment: 'setClaimFee', values: [BigNumberish]): string;
+encodeFunctionData(functionFragment: 'setDependencies', values: [AddressLike, AddressLike]): string;
 encodeFunctionData(functionFragment: 'supportsInterface', values: [BytesLike]): string;
 encodeFunctionData(functionFragment: 'symbol', values?: undefined): string;
+encodeFunctionData(functionFragment: 'tokenLicenseType', values: [BigNumberish]): string;
 encodeFunctionData(functionFragment: 'tokenURI', values: [BigNumberish]): string;
 encodeFunctionData(functionFragment: 'transferFrom', values: [AddressLike, AddressLike, BigNumberish]): string;
 encodeFunctionData(functionFragment: 'transferOwnership', values: [AddressLike]): string;
 
-    decodeFunctionResult(functionFragment: 'approve', data: BytesLike): Result;
+    decodeFunctionResult(functionFragment: 'airlineCoin', data: BytesLike): Result;
+decodeFunctionResult(functionFragment: 'approve', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'balanceOf', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'burnLicense', data: BytesLike): Result;
+decodeFunctionResult(functionFragment: 'claimFee', data: BytesLike): Result;
+decodeFunctionResult(functionFragment: 'claimLicense', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'getApproved', data: BytesLike): Result;
+decodeFunctionResult(functionFragment: 'getRequiredHours', data: BytesLike): Result;
+decodeFunctionResult(functionFragment: 'hasClaimedLicense', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'isApprovedForAll', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'lazyMint', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'mintLicense', data: BytesLike): Result;
@@ -42,12 +56,16 @@ decodeFunctionResult(functionFragment: 'name', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'owner', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'ownerOf', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'parseLicenseLevel', data: BytesLike): Result;
+decodeFunctionResult(functionFragment: 'pilotCareer', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'renounceOwnership', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'safeTransferFrom(address,address,uint256)', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'safeTransferFrom(address,address,uint256,bytes)', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'setApprovalForAll', data: BytesLike): Result;
+decodeFunctionResult(functionFragment: 'setClaimFee', data: BytesLike): Result;
+decodeFunctionResult(functionFragment: 'setDependencies', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'supportsInterface', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'symbol', data: BytesLike): Result;
+decodeFunctionResult(functionFragment: 'tokenLicenseType', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'tokenURI', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'transferFrom', data: BytesLike): Result;
 decodeFunctionResult(functionFragment: 'transferOwnership', data: BytesLike): Result;
@@ -160,6 +178,14 @@ decodeFunctionResult(functionFragment: 'transferOwnership', data: BytesLike): Re
 
     
     
+    airlineCoin: TypedContractMethod<
+      [],
+      [string],
+      'view'
+    >
+    
+
+    
     approve: TypedContractMethod<
       [to: AddressLike, tokenId: BigNumberish, ],
       [void],
@@ -184,9 +210,41 @@ decodeFunctionResult(functionFragment: 'transferOwnership', data: BytesLike): Re
     
 
     
+    claimFee: TypedContractMethod<
+      [],
+      [bigint],
+      'view'
+    >
+    
+
+    
+    claimLicense: TypedContractMethod<
+      [licenseType: BigNumberish, metadata: string, ],
+      [void],
+      'nonpayable'
+    >
+    
+
+    
     getApproved: TypedContractMethod<
       [tokenId: BigNumberish, ],
       [string],
+      'view'
+    >
+    
+
+    
+    getRequiredHours: TypedContractMethod<
+      [licenseType: BigNumberish, ],
+      [bigint],
+      'view'
+    >
+    
+
+    
+    hasClaimedLicense: TypedContractMethod<
+      [arg0: AddressLike, arg1: BigNumberish, ],
+      [boolean],
       'view'
     >
     
@@ -248,6 +306,14 @@ decodeFunctionResult(functionFragment: 'transferOwnership', data: BytesLike): Re
     
 
     
+    pilotCareer: TypedContractMethod<
+      [],
+      [string],
+      'view'
+    >
+    
+
+    
     renounceOwnership: TypedContractMethod<
       [],
       [void],
@@ -280,6 +346,22 @@ decodeFunctionResult(functionFragment: 'transferOwnership', data: BytesLike): Re
     
 
     
+    setClaimFee: TypedContractMethod<
+      [_fee: BigNumberish, ],
+      [void],
+      'nonpayable'
+    >
+    
+
+    
+    setDependencies: TypedContractMethod<
+      [_airlineCoin: AddressLike, _pilotCareer: AddressLike, ],
+      [void],
+      'nonpayable'
+    >
+    
+
+    
     supportsInterface: TypedContractMethod<
       [interfaceId: BytesLike, ],
       [boolean],
@@ -291,6 +373,14 @@ decodeFunctionResult(functionFragment: 'transferOwnership', data: BytesLike): Re
     symbol: TypedContractMethod<
       [],
       [string],
+      'view'
+    >
+    
+
+    
+    tokenLicenseType: TypedContractMethod<
+      [arg0: BigNumberish, ],
+      [bigint],
       'view'
     >
     
@@ -322,7 +412,12 @@ decodeFunctionResult(functionFragment: 'transferOwnership', data: BytesLike): Re
 
     getFunction<T extends ContractMethod = ContractMethod>(key: string | FunctionFragment): T;
 
-    getFunction(nameOrSignature: 'approve'): TypedContractMethod<
+    getFunction(nameOrSignature: 'airlineCoin'): TypedContractMethod<
+      [],
+      [string],
+      'view'
+    >;
+getFunction(nameOrSignature: 'approve'): TypedContractMethod<
       [to: AddressLike, tokenId: BigNumberish, ],
       [void],
       'nonpayable'
@@ -337,9 +432,29 @@ getFunction(nameOrSignature: 'burnLicense'): TypedContractMethod<
       [void],
       'nonpayable'
     >;
+getFunction(nameOrSignature: 'claimFee'): TypedContractMethod<
+      [],
+      [bigint],
+      'view'
+    >;
+getFunction(nameOrSignature: 'claimLicense'): TypedContractMethod<
+      [licenseType: BigNumberish, metadata: string, ],
+      [void],
+      'nonpayable'
+    >;
 getFunction(nameOrSignature: 'getApproved'): TypedContractMethod<
       [tokenId: BigNumberish, ],
       [string],
+      'view'
+    >;
+getFunction(nameOrSignature: 'getRequiredHours'): TypedContractMethod<
+      [licenseType: BigNumberish, ],
+      [bigint],
+      'view'
+    >;
+getFunction(nameOrSignature: 'hasClaimedLicense'): TypedContractMethod<
+      [arg0: AddressLike, arg1: BigNumberish, ],
+      [boolean],
       'view'
     >;
 getFunction(nameOrSignature: 'isApprovedForAll'): TypedContractMethod<
@@ -377,6 +492,11 @@ getFunction(nameOrSignature: 'parseLicenseLevel'): TypedContractMethod<
       [bigint],
       'view'
     >;
+getFunction(nameOrSignature: 'pilotCareer'): TypedContractMethod<
+      [],
+      [string],
+      'view'
+    >;
 getFunction(nameOrSignature: 'renounceOwnership'): TypedContractMethod<
       [],
       [void],
@@ -397,6 +517,16 @@ getFunction(nameOrSignature: 'setApprovalForAll'): TypedContractMethod<
       [void],
       'nonpayable'
     >;
+getFunction(nameOrSignature: 'setClaimFee'): TypedContractMethod<
+      [_fee: BigNumberish, ],
+      [void],
+      'nonpayable'
+    >;
+getFunction(nameOrSignature: 'setDependencies'): TypedContractMethod<
+      [_airlineCoin: AddressLike, _pilotCareer: AddressLike, ],
+      [void],
+      'nonpayable'
+    >;
 getFunction(nameOrSignature: 'supportsInterface'): TypedContractMethod<
       [interfaceId: BytesLike, ],
       [boolean],
@@ -405,6 +535,11 @@ getFunction(nameOrSignature: 'supportsInterface'): TypedContractMethod<
 getFunction(nameOrSignature: 'symbol'): TypedContractMethod<
       [],
       [string],
+      'view'
+    >;
+getFunction(nameOrSignature: 'tokenLicenseType'): TypedContractMethod<
+      [arg0: BigNumberish, ],
+      [bigint],
       'view'
     >;
 getFunction(nameOrSignature: 'tokenURI'): TypedContractMethod<
